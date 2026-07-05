@@ -7,12 +7,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Paths to JSON storage
 const DATA_DIR = path.join(__dirname, 'data');
 const PATIENTS_FILE = path.join(DATA_DIR, 'patients.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
 
 // Mock initial data
 const INITIAL_PATIENTS = [
@@ -162,6 +164,9 @@ const INITIAL_SETTINGS = {
 if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR);
 }
+if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR);
+}
 
 // Initial storage helpers
 function readDataFile(filepath, fallback) {
@@ -232,6 +237,70 @@ app.put('/api/patients/:refId', (req, res) => {
     res.json(patientsList[index]);
 });
 
+app.delete('/api/patients/:refId', (req, res) => {
+    const patientsList = readDataFile(PATIENTS_FILE, INITIAL_PATIENTS);
+    const refId = req.params.refId;
+    const index = patientsList.findIndex(p => p.refId === refId);
+    
+    if (index === -1) {
+        return res.status(404).json({ error: "Patient record not found." });
+    }
+    
+    const deletedPatient = patientsList.splice(index, 1)[0];
+    writeDataFile(PATIENTS_FILE, patientsList);
+    res.json({ message: "Patient record deleted successfully.", refId: refId });
+});
+
+app.post('/api/patients/:refId/upload-image', (req, res) => {
+    const refId = req.params.refId;
+    const { imageType, base64Data, date } = req.body;
+    
+    if (!base64Data || !imageType) {
+        return res.status(400).json({ error: "Missing image data or type." });
+    }
+    
+    const patientsList = readDataFile(PATIENTS_FILE, INITIAL_PATIENTS);
+    const index = patientsList.findIndex(p => p.refId === refId);
+    if (index === -1) {
+        return res.status(404).json({ error: "Patient record not found." });
+    }
+    
+    try {
+        const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            return res.status(400).json({ error: "Invalid base64 image format." });
+        }
+        
+        const mimeType = matches[1];
+        const buffer = Buffer.from(matches[2], 'base64');
+        
+        let extension = 'jpg';
+        if (mimeType === 'image/png') extension = 'png';
+        else if (mimeType === 'image/webp') extension = 'webp';
+        else if (mimeType === 'image/gif') extension = 'gif';
+        
+        const fileName = `${imageType}_${refId}_${Date.now()}.${extension}`;
+        const filePath = path.join(UPLOADS_DIR, fileName);
+        
+        fs.writeFileSync(filePath, buffer);
+        
+        const relativeUrl = `uploads/${fileName}`;
+        if (imageType === 'before') {
+            patientsList[index].beforeImg = relativeUrl;
+            if (date) patientsList[index].beforeDate = date;
+        } else if (imageType === 'after') {
+            patientsList[index].afterImg = relativeUrl;
+            if (date) patientsList[index].afterDate = date;
+        }
+        
+        writeDataFile(PATIENTS_FILE, patientsList);
+        res.json(patientsList[index]);
+    } catch (err) {
+        console.error("Error saving uploaded image:", err);
+        res.status(500).json({ error: "Failed to save image file on server." });
+    }
+});
+
 app.get('/api/settings', (req, res) => {
     const settings = readDataFile(SETTINGS_FILE, INITIAL_SETTINGS);
     res.json(settings);
@@ -250,6 +319,7 @@ app.post('/api/reset', (req, res) => {
 });
 
 // Serve frontend static assets
+app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(__dirname));
 
 // Catch-all route to serve index.html (fallback)

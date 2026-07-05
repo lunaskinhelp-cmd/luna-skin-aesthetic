@@ -182,6 +182,20 @@ function loadPatientData(patient) {
     beforeImgElements.forEach(img => img.src = patient.beforeImg);
     afterImgElements.forEach(img => img.src = patient.afterImg);
 
+    // Helper to parse saved display dates back to YYYY-MM-DD
+    function parseToISODate(dateStr) {
+        if (!dateStr || dateStr === "N/A" || dateStr === "Today") {
+            return new Date().toISOString().slice(0, 10);
+        }
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) {
+            return new Date().toISOString().slice(0, 10);
+        }
+        return d.toISOString().slice(0, 10);
+    }
+    
+    document.getElementById("upload-before-date").value = parseToISODate(patient.beforeDate);
+    document.getElementById("upload-after-date").value = parseToISODate(patient.afterDate);
 
     // Load Signature Verification state
     updateSignatureUIState();
@@ -215,11 +229,13 @@ function lockInputsState(isLocked) {
     const elementsToLock = [
         "patient-name", "patient-age", "patient-gender", "patient-contact",
         "patient-allergies", "patient-medications", "patient-routine",
-        "patient-skintype", "patient-concern", "practitioner-notes"
+        "patient-skintype", "patient-concern", "practitioner-notes",
+        "upload-before-date", "upload-after-date"
     ];
     
     elementsToLock.forEach(id => {
-        document.getElementById(id).disabled = isLocked;
+        const el = document.getElementById(id);
+        if (el) el.disabled = isLocked;
     });
     
     const checkboxes = document.querySelectorAll("#concerns-checklist input[type='checkbox']");
@@ -233,6 +249,21 @@ function lockInputsState(isLocked) {
     document.getElementById("add-log-entry-btn").style.display = isLocked ? "none" : "inline-flex";
     document.getElementById("reschedule-btn").style.display = isLocked ? "none" : "inline-flex";
     document.getElementById("confirm-booking-btn").style.display = isLocked ? "none" : "inline-flex";
+
+    // Lock image uploads
+    const beforeInput = document.getElementById("input-upload-before");
+    const afterInput = document.getElementById("input-upload-after");
+    if (beforeInput) beforeInput.disabled = isLocked;
+    if (afterInput) afterInput.disabled = isLocked;
+    
+    const zones = document.querySelectorAll(".upload-zone");
+    zones.forEach(zone => {
+        if (isLocked) {
+            zone.classList.add("disabled");
+        } else {
+            zone.classList.remove("disabled");
+        }
+    });
 }
 
 // Signature Block UI rendering
@@ -570,9 +601,12 @@ function renderPatientDirectory(filteredSearch = "") {
                     ${p.status}
                 </span>
             </td>
-            <td style="text-align: right;">
+            <td style="text-align: right; white-space: nowrap;">
                 <button class="btn-secondary font-label-sm select-patient-btn" data-id="${p.refId}" style="padding: 6px 12px; font-size: 10px;">
                     Open Case Sheet
+                </button>
+                <button class="btn-danger font-label-sm delete-patient-btn" data-id="${p.refId}" style="padding: 6px 12px; font-size: 10px; margin-left: 8px;">
+                    Delete
                 </button>
             </td>
         `;
@@ -585,6 +619,28 @@ function renderPatientDirectory(filteredSearch = "") {
             // Switch views
             switchToTab("caseSheets");
             showToast(`Loaded ${pObj.name}'s Case Sheet`);
+        });
+
+        // Setup delete patient click event
+        tr.querySelector(".delete-patient-btn").addEventListener("click", async (e) => {
+            e.stopPropagation();
+            if (confirm(`Are you sure you want to permanently delete the patient record for ${p.name}?`)) {
+                try {
+                    const res = await fetch(`/api/patients/${p.refId}`, {
+                        method: "DELETE"
+                    });
+                    if (!res.ok) throw new Error("Failed to delete patient");
+                    
+                    showToast(`Patient record for ${p.name} deleted successfully.`);
+                    
+                    // Reload patients and directory
+                    await loadPatientsFromServer();
+                    renderPatientDirectory();
+                } catch (err) {
+                    console.error("Failed to delete patient:", err);
+                    showToast("Failed to delete patient from server.", "error");
+                }
+            }
         });
         
         tbody.appendChild(tr);
@@ -1207,6 +1263,109 @@ function applySettings(clinicName, docName, licId) {
     }
 }
 
+// IMAGE UPLOAD IMPLEMENTATION
+async function handleImageUpload(file, type) {
+    if (!activePatient) return;
+    if (activePatient.signed) {
+        showToast("Cannot modify clinical photos on a verified protocol.", "error");
+        return;
+    }
+    
+    let dateInputId = type === 'before' ? 'upload-before-date' : 'upload-after-date';
+    let dateVal = document.getElementById(dateInputId).value;
+    
+    if (!dateVal) {
+        dateVal = new Date().toISOString().slice(0, 10);
+    }
+    
+    const dateObj = new Date(dateVal);
+    const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    showToast(`Uploading ${type} photo...`, "info");
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const base64Data = e.target.result;
+        try {
+            const res = await fetch(`/api/patients/${activePatient.refId}/upload-image`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    imageType: type,
+                    base64Data: base64Data,
+                    date: formattedDate
+                })
+            });
+            
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || "Upload failed");
+            }
+            
+            const updatedPatient = await res.json();
+            
+            const idx = patients.findIndex(p => p.refId === updatedPatient.refId);
+            if (idx !== -1) {
+                patients[idx] = updatedPatient;
+            }
+            
+            loadPatientData(updatedPatient);
+            showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} photo updated successfully.`, "success");
+        } catch (err) {
+            console.error("Image upload failed:", err);
+            showToast(`Image upload failed: ${err.message}`, "error");
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+// BIND IMAGE UPLOAD & DATE PICKER EVENTS
+const inputBefore = document.getElementById("input-upload-before");
+const inputAfter = document.getElementById("input-upload-after");
+
+if (inputBefore) {
+    inputBefore.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) {
+            handleImageUpload(e.target.files[0], 'before');
+        }
+    });
+}
+
+if (inputAfter) {
+    inputAfter.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) {
+            handleImageUpload(e.target.files[0], 'after');
+        }
+    });
+}
+
+const uploadBeforeDate = document.getElementById("upload-before-date");
+const uploadAfterDate = document.getElementById("upload-after-date");
+
+if (uploadBeforeDate) {
+    uploadBeforeDate.addEventListener("change", () => {
+        const dateObj = new Date(uploadBeforeDate.value);
+        if (!isNaN(dateObj.getTime())) {
+            activePatient.beforeDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            document.getElementById("patient-photo-before-date").textContent = activePatient.beforeDate;
+            triggerAutosave();
+        }
+    });
+}
+
+if (uploadAfterDate) {
+    uploadAfterDate.addEventListener("change", () => {
+        const dateObj = new Date(uploadAfterDate.value);
+        if (!isNaN(dateObj.getTime())) {
+            activePatient.afterDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            document.getElementById("patient-photo-after-date").textContent = activePatient.afterDate;
+            triggerAutosave();
+        }
+    });
+}
+
 // APP INITIAL LOAD
 window.addEventListener("DOMContentLoaded", async () => {
     // Apply Settings from server
@@ -1220,6 +1379,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     // Initial Load patients from server
     await loadPatientsFromServer();
+    
+    // Force start at patient directory view
+    switchToTab("patientList");
     
     // Position comparison slider initially in center
     setTimeout(() => {

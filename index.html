@@ -15,7 +15,7 @@
 <body>
 
     <!-- Main Sidebar Navigation (Clinical Portal) -->
-    <nav class="sidebar-nav" id="sidebar-nav">
+    <nav class="sidebar-nav" id="sidebar-nav" style="display: none;">
         <div style="padding: 0 24px; margin-bottom: 32px; display: flex; flex-direction: column; gap: 16px;">
             <div class="brand-logo-container" style="gap: 10px;">
                 <svg class="brand-logo-svg" style="width: 32px; height: 32px;" viewBox="0 0 200 200">
@@ -104,8 +104,8 @@
                         </div>
                     </div>
                     <div class="tab-nav">
-                        <span class="tab-btn active" id="tab-case-sheets">Clinical Sheets</span>
-                        <span class="tab-btn" id="tab-patient-list">Patient List</span>
+                        <span class="tab-btn" id="tab-case-sheets">Clinical Sheets</span>
+                        <span class="tab-btn active" id="tab-patient-list">Patient List</span>
                     </div>
                 </div>
                 
@@ -127,7 +127,7 @@
             </header>
 
             <!-- CASE SHEETS VIEW CONTAINER -->
-            <div id="case-sheet-view" class="view-panel">
+            <div id="case-sheet-view" class="view-panel" style="display: none;">
                 
                 <!-- Patient Info Header Sticky Banner -->
                 <div class="patient-action-bar">
@@ -461,6 +461,40 @@
                             </div>
                         </div>
 
+                        <!-- Update/Add Images Panel -->
+                        <div class="photo-upload-panel" id="photo-upload-panel" style="margin-top: 32px; border-top: 1px solid var(--color-outline-variant); padding-top: 24px;">
+                            <h4 class="font-label-sm text-primary" style="margin-bottom: 16px;">Update Clinical Photography</h4>
+                            <div class="grid-2">
+                                <!-- Before Image Upload -->
+                                <div class="upload-zone" id="upload-zone-before">
+                                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-secondary); margin-bottom: 8px;">add_a_photo</span>
+                                    <p class="font-label-sm" style="font-size: 11px;">Upload Before Photo</p>
+                                    <p class="font-body-md text-secondary" style="font-size: 12px; margin-top: 4px; text-transform: none;">Drag & drop or click to browse</p>
+                                    <input type="file" id="input-upload-before" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;"/>
+                                    
+                                    <!-- Date Picker for Before Image -->
+                                    <div class="form-group" style="margin-top: 16px; margin-bottom: 0; text-align: left;" onclick="event.stopPropagation();">
+                                        <label class="label-clinical" style="font-size: 9px;">Photo Date</label>
+                                        <input class="input-clinical font-body-md" id="upload-before-date" type="date" style="font-size: 12px; padding: 4px 0;"/>
+                                    </div>
+                                </div>
+
+                                <!-- After Image Upload -->
+                                <div class="upload-zone" id="upload-zone-after">
+                                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-secondary); margin-bottom: 8px;">add_a_photo</span>
+                                    <p class="font-label-sm" style="font-size: 11px;">Upload After Photo</p>
+                                    <p class="font-body-md text-secondary" style="font-size: 12px; margin-top: 4px; text-transform: none;">Drag & drop or click to browse</p>
+                                    <input type="file" id="input-upload-after" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;"/>
+                                    
+                                    <!-- Date Picker for After Image -->
+                                    <div class="form-group" style="margin-top: 16px; margin-bottom: 0; text-align: left;" onclick="event.stopPropagation();">
+                                        <label class="label-clinical" style="font-size: 9px;">Photo Date</label>
+                                        <input class="input-clinical font-body-md" id="upload-after-date" type="date" style="font-size: 12px; padding: 4px 0;"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <p class="font-label-sm text-secondary" style="margin-top: 24px; text-transform: none; font-style: italic; opacity: 0.6;">
                             Photos captured under standardized clinical lighting (Polarized/UV).
                         </p>
@@ -470,7 +504,7 @@
             </div>
 
             <!-- PATIENT LIST VIEW CONTAINER (Hidden by default) -->
-            <div id="patient-list-view" class="view-panel" style="display: none;">
+            <div id="patient-list-view" class="view-panel">
                 <main class="patient-list-section">
                     <div class="patient-table-card">
                         <h2 class="font-headline-md text-primary" style="margin-bottom: 24px;">Patient Directory</h2>

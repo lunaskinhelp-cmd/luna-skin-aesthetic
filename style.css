@@ -1258,6 +1258,28 @@ footer.app-footer .footer-links a:hover {
     }
 }
 
+/* Image Upload Zone Styles */
+.upload-zone {
+    border: 1px dashed var(--color-outline-variant);
+    background-color: var(--color-surface-container-low);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-speed) var(--transition-ease);
+}
+
+.upload-zone:hover {
+    border-color: var(--color-primary);
+    background-color: var(--color-surface-container);
+}
+
+.upload-zone.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /* Print Styles for Premium Case Sheet PDF Export */
 @media print {
     /* Set page margins and hide scroll bars */
