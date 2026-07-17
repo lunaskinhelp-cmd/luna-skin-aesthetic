@@ -1,5 +1,5 @@
 node_modules/
-data/patients.json
-data/settings.json
+data/
+uploads/
 .system_generated/
 *.log

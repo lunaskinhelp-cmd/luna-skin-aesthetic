@@ -3,40 +3,920 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Clinical Portal | Luna Skin Aesthetic</title>
-    
-    <!-- Premium Google Fonts & Material Symbols Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Geist:wght@100..900&display=swap" rel="stylesheet"/>
+    <title>Luna Skin Aesthetic | Premium Non-Medical Aesthetics & Cosmetic Skincare</title>
+    <meta name="description" content="Luna Skin Aesthetic offers premium cosmetic treatments including beauty laser therapy, HydraFacial, cosmetic peels, and RF skin tightening. Book your consultation today."/>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
-    
-    <!-- Link to local custom vanilla CSS styles -->
     <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-    <!-- Main Sidebar Navigation (Clinical Portal) -->
-    <nav class="sidebar-nav" id="sidebar-nav" style="display: none;">
-        <div style="padding: 0 24px; margin-bottom: 32px; display: flex; flex-direction: column; gap: 16px;">
-            <div class="brand-logo-container" style="gap: 10px;">
-                <svg class="brand-logo-svg" style="width: 32px; height: 32px;" viewBox="0 0 200 200">
-                    <circle cx="100" cy="100" r="92" class="logo-outline" />
-                    <g class="logo-graphic" transform="translate(9, 22)">
-                        <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z" />
+<!-- ══════════════════════════════════════════════════════════
+     PAGE: LANDING (Public Homepage)
+════════════════════════════════════════════════════════════ -->
+<div id="page-landing" class="page-section">
+
+    <!-- ── Landing Nav ── -->
+    <nav class="landing-nav" id="landing-nav">
+        <div class="landing-nav-inner">
+            <a href="#" class="brand-logo-container" onclick="showPage('landing')">
+                <svg class="brand-logo-svg" style="width:36px;height:36px;" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="92" class="logo-outline"/>
+                    <g class="logo-graphic" transform="translate(9,22)">
+                        <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
                         <g transform="translate(120, 52) scale(0.85) rotate(-12)">
-                            <path d="M 2,-2 C 6,-12 18,-10 14,-2 C 12,2 4,1 2,2 C 6,6 12,10 9,14 C 6,18 0,10 2,-2 Z" />
-                            <path d="M -1,-2 C -4,-10 -12,-8 -9,-2 C -8,1 -3,1 -1,2 C -4,5 -8,8 -6,11 C -4,14 0,8 -1,-2 Z" />
-                            <path d="M 0,-4 C 1,-9 6,-11 9,-10 M 0,-4 C -1,-9 -4,-11 -6,-10" fill="none" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" />
+                            <path d="M 2,-2 C 6,-12 18,-10 14,-2 C 12,2 4,1 2,2 C 6,6 12,10 9,14 C 6,18 0,10 2,-2 Z"/>
+                            <path d="M -1,-2 C -4,-10 -12,-8 -9,-2 C -8,1 -3,1 -1,2 C -4,5 -8,8 -6,11 C -4,14 0,8 -1,-2 Z"/>
                         </g>
                     </g>
                 </svg>
                 <div class="brand-text">
-                    <span class="brand-name" style="font-size: 14px; font-family: 'Cinzel', serif; letter-spacing: 0.08em; text-transform: uppercase;">LUNA</span>
-                    <span class="brand-subname" style="font-size: 7px; margin-top: 2px;">SKIN AESTHETICS</span>
+                    <span style="font-family:'Playfair Display',serif;font-size:15px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;">LUNA</span>
+                    <span style="font-size:8px;letter-spacing:0.15em;opacity:0.6;">SKIN AESTHETICS</span>
+                </div>
+            </a>
+
+            <ul class="landing-nav-links">
+                <li><a href="#services-section">Services</a></li>
+                <li><a href="#about-section">About</a></li>
+                <li><a href="#gallery-section">Gallery</a></li>
+                <li><a href="#booking-section">Book Now</a></li>
+            </ul>
+
+            <div class="landing-nav-actions">
+                <button class="btn-nav-ghost" onclick="showPage('auth'); setAuthRole('patient'); setAuthTab('login')">Patient Login</button>
+                <button class="btn-nav-primary" onclick="showPage('auth'); setAuthRole('doctor'); setAuthTab('login')">Doctor Portal</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── Hero Section ── -->
+    <section class="hero-section" id="hero-section">
+        <div class="hero-bg-overlay"></div>
+        <div class="hero-particles" id="hero-particles"></div>
+
+        <div class="hero-content">
+            <span class="hero-eyebrow">Premium Cosmetic Aesthetics</span>
+            <h1 class="hero-headline">Radiant Skin.<br/>Aesthetic Excellence.</h1>
+            <p class="hero-subtext">Experience the pinnacle of cosmetic aesthetic care — where cutting-edge science meets artistry. Transforming skin with precision cosmetic protocols tailored exclusively for you.</p>
+            <div class="hero-actions">
+                <button class="btn-hero-primary" onclick="document.getElementById('booking-section').scrollIntoView({behavior:'smooth'})">
+                    Book Your Consultation
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+                <button class="btn-hero-ghost" onclick="showPage('auth'); setAuthRole('patient'); setAuthTab('register')">
+                    New Patient Registration
+                </button>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-num">2,400+</span>
+                    <span class="hero-stat-label">Patients Treated</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-num">15+</span>
+                    <span class="hero-stat-label">Treatment Types</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-num">98%</span>
+                    <span class="hero-stat-label">Satisfaction Rate</span>
                 </div>
             </div>
-            <div style="border-top: 1px solid var(--color-outline-variant); padding-top: 12px;">
-                <h2 class="font-headline-md text-primary" style="font-size: 16px; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600;">Clinical Portal</h2>
-                <p class="font-label-sm text-secondary" style="margin-top: 2px; font-size: 9px;">Dermatology Specialist</p>
+        </div>
+
+        <div class="hero-image-panel">
+            <div class="hero-float-card card-1">
+                <span class="material-symbols-outlined" style="color:var(--color-tertiary)">verified_user</span>
+                <div>
+                    <p style="font-weight:700;font-size:13px;">Protocol Verified</p>
+                    <p style="font-size:11px;opacity:0.7;">Dr. Elena Vogt, MD</p>
+                </div>
+            </div>
+            <div class="hero-float-card card-2">
+                <span class="material-symbols-outlined" style="color:var(--color-primary)">event_available</span>
+                <div>
+                    <p style="font-weight:700;font-size:13px;">Next Available</p>
+                    <p style="font-size:11px;opacity:0.7;">Tomorrow 10:30 AM</p>
+                </div>
+            </div>
+            <div class="hero-center-circle">
+                <svg viewBox="0 0 200 200" style="width:120px;height:120px;opacity:0.25;">
+                    <circle cx="100" cy="100" r="92" stroke="var(--color-primary)" stroke-width="1.5" fill="none"/>
+                    <g fill="var(--color-primary)" transform="translate(9,22)">
+                        <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <div class="hero-scroll-indicator">
+            <span class="material-symbols-outlined" style="animation: bounceDown 1.5s infinite;">keyboard_arrow_down</span>
+        </div>
+    </section>
+
+    <!-- ── Services Section ── -->
+    <section class="landing-section services-section" id="services-section">
+        <div class="landing-container">
+            <div class="section-header">
+                <span class="section-eyebrow">Our Treatments</span>
+                <h2 class="section-title">Cosmetic Aesthetic Services</h2>
+                <p class="section-subtitle">Scientifically advanced treatments delivered by certified cosmetic specialists in a clean, premium environment.</p>
+            </div>
+
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon-wrap" style="--icon-color: var(--color-primary);">
+                        <span class="material-symbols-outlined">flash_on</span>
+                    </div>
+                    <h3>Carbon Laser Peel</h3>
+                    <p>Advanced Q-switched Nd:YAG laser treatment for pore minimization, skin brightening, and acne management.</p>
+                    <span class="service-tag">30–45 min</span>
+                </div>
+                <div class="service-card featured">
+                    <div class="service-badge">Most Popular</div>
+                    <div class="service-icon-wrap" style="--icon-color: var(--color-tertiary);">
+                        <span class="material-symbols-outlined">water_drop</span>
+                    </div>
+                    <h3>HydraFacial Deluxe</h3>
+                    <p>Multi-step vortex infusion treatment combining deep cleansing, exfoliation, extraction, and intense hydration.</p>
+                    <span class="service-tag">60 min</span>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon-wrap" style="--icon-color: var(--color-secondary);">
+                        <span class="material-symbols-outlined">science</span>
+                    </div>
+                    <h3>Chemical Peels</h3>
+                    <p>Advanced cosmetic TCA, Glycolic, and Mandelic acid peels customized for hyperpigmentation and texture refinement.</p>
+                    <span class="service-tag">45–60 min</span>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon-wrap" style="--icon-color: #A47D75;">
+                        <span class="material-symbols-outlined">air_waves</span>
+                    </div>
+                    <h3>RF Skin Tightening</h3>
+                    <p>Non-invasive radiofrequency energy delivery for collagen stimulation, facial contouring, and elasticity restoration.</p>
+                    <span class="service-tag">60–90 min</span>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon-wrap" style="--icon-color: #6C8275;">
+                        <span class="material-symbols-outlined">light_mode</span>
+                    </div>
+                    <h3>LED Light Therapy</h3>
+                    <p>Targeted blue, red, and near-infrared LED therapy for acne reduction, anti-aging, and wound healing acceleration.</p>
+                    <span class="service-tag">20–30 min</span>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon-wrap" style="--icon-color: #A68E76;">
+                        <span class="material-symbols-outlined">vaccines</span>
+                    </div>
+                    <h3>Microneedling</h3>
+                    <p>Precision collagen induction therapy for scar reduction, pore refinement, and full-face skin rejuvenation.</p>
+                    <span class="service-tag">60–75 min</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── About Section ── -->
+    <section class="landing-section about-section" id="about-section">
+        <div class="landing-container">
+            <div class="about-grid">
+                <div class="about-content">
+                    <span class="section-eyebrow">Our Specialist</span>
+                    <h2 class="section-title" style="font-size:38px;">Meet Dr. Elena Vogt</h2>
+                    <p class="about-bio">Certified aesthetic specialist with over 12 years of experience in cosmetic treatments and non-medical aesthetics. Dr. Vogt combines European precision techniques with the latest evidence-based beauty protocols to deliver transformative results.</p>
+
+                    <div class="about-credentials">
+                        <div class="credential-item">
+                            <span class="material-symbols-outlined">school</span>
+                            <div>
+                                <p class="cred-title">Education</p>
+                                <p class="cred-detail">MD, University of Vienna — Aesthetic Cosmetics Training, Berlin Charité</p>
+                            </div>
+                        </div>
+                        <div class="credential-item">
+                            <span class="material-symbols-outlined">verified</span>
+                            <div>
+                                <p class="cred-title">Certifications</p>
+                                <p class="cred-detail">Aesthetic Cosmetics Practitioner · Laser Safety Certified</p>
+                            </div>
+                        </div>
+                        <div class="credential-item">
+                            <span class="material-symbols-outlined">workspace_premium</span>
+                            <div>
+                                <p class="cred-title">Specialization</p>
+                                <p class="cred-detail">Cosmetic Laser Therapy · Aesthetic Skincare · Skin Revitalization</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="document.getElementById('booking-section').scrollIntoView({behavior:'smooth'})">
+                        Book a Consultation
+                    </button>
+                </div>
+
+                <div class="about-image-wrap">
+                    <img src="practitioner.jpg" alt="Dr. Elena Vogt" class="about-doctor-img"/>
+                    <div class="about-badge">
+                        <span class="material-symbols-outlined">star</span>
+                        <div>
+                            <p style="font-weight:700;font-size:14px;">12+ Years</p>
+                            <p style="font-size:11px;opacity:0.7;">Aesthetic Experience</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Gallery Section ── -->
+    <section class="landing-section gallery-section" id="gallery-section">
+        <div class="landing-container">
+            <div class="section-header">
+                <span class="section-eyebrow">Cosmetic Results</span>
+                <h2 class="section-title">Before & After Gallery</h2>
+                <p class="section-subtitle">Real transformations — documented under standardized photography protocols.</p>
+            </div>
+
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <div class="gallery-split-preview">
+                        <div class="gallery-img-half">
+                            <img src="before_treatment.jpg" alt="Before Treatment"/>
+                            <span class="gallery-label">Before</span>
+                        </div>
+                        <div class="gallery-img-half">
+                            <img src="after_treatment.jpg" alt="After Treatment"/>
+                            <span class="gallery-label after">After</span>
+                        </div>
+                    </div>
+                    <div class="gallery-caption">
+                        <h4>Hyperpigmentation Correction</h4>
+                        <p>Carbon Laser + Chemical Peel Protocol · 8 Weeks</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-split-preview">
+                        <div class="gallery-img-half">
+                            <img src="before_treatment.jpg" alt="Before Treatment"/>
+                            <span class="gallery-label">Before</span>
+                        </div>
+                        <div class="gallery-img-half">
+                            <img src="after_treatment.jpg" alt="After Treatment"/>
+                            <span class="gallery-label after">After</span>
+                        </div>
+                    </div>
+                    <div class="gallery-caption">
+                        <h4>Acne & Scar Reduction</h4>
+                        <p>LED Therapy + HydraFacial Series · 12 Weeks</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-split-preview">
+                        <div class="gallery-img-half">
+                            <img src="before_treatment.jpg" alt="Before Treatment"/>
+                            <span class="gallery-label">Before</span>
+                        </div>
+                        <div class="gallery-img-half">
+                            <img src="after_treatment.jpg" alt="After Treatment"/>
+                            <span class="gallery-label after">After</span>
+                        </div>
+                    </div>
+                    <div class="gallery-caption">
+                        <h4>Skin Tightening & Contouring</h4>
+                        <p>RF Tightening + Microcurrent · 6 Weeks</p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="gallery-disclaimer">* Photos taken under standardized lighting. Results may vary based on individual skin type and treatment adherence.</p>
+        </div>
+    </section>
+
+    <!-- ── Booking Section ── -->
+    <section class="landing-section booking-section" id="booking-section">
+        <div class="landing-container">
+            <div class="booking-grid">
+                <div class="booking-info">
+                    <span class="section-eyebrow">Get Started</span>
+                    <h2 class="section-title" style="font-size:38px;">Book Your<br/>Consultation</h2>
+                    <p style="opacity:0.8;line-height:1.7;margin-top:16px;">Our aesthetic team will review your inquiry within 24 hours and confirm your appointment. New clients receive a comprehensive skin consultation at their first visit.</p>
+
+                    <div class="booking-contact-pills">
+                        <div class="contact-pill">
+                            <span class="material-symbols-outlined">call</span>
+                            <span>+971 4 123 4567</span>
+                        </div>
+                        <div class="contact-pill">
+                            <span class="material-symbols-outlined">mail</span>
+                            <span>hello@lunaskin.ae</span>
+                        </div>
+                        <div class="contact-pill">
+                            <span class="material-symbols-outlined">location_on</span>
+                            <span>Business Bay, Dubai</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="booking-form-card">
+                    <h3 style="font-family:'Playfair Display',serif;letter-spacing:0.05em;margin-bottom:24px;">Request Appointment</h3>
+                    <form id="landing-booking-form" class="booking-form" onsubmit="submitLandingBooking(event)">
+                        <div class="form-group">
+                            <label class="label-clinical">Full Name</label>
+                            <input class="input-clinical" id="bk-name" type="text" placeholder="Your full name" required/>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-clinical">Phone Number</label>
+                            <input class="input-clinical" id="bk-phone" type="tel" placeholder="+971 XX XXX XXXX" required/>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-clinical">Email Address</label>
+                            <input class="input-clinical" id="bk-email" type="email" placeholder="your@email.com"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-clinical">Treatment Interest</label>
+                            <select class="input-clinical" id="bk-service">
+                                <option value="">Select a treatment...</option>
+                                <option>Carbon Laser Peel</option>
+                                <option>HydraFacial Deluxe</option>
+                                <option>Chemical Peel</option>
+                                <option>RF Skin Tightening</option>
+                                <option>LED Light Therapy</option>
+                                <option>Microneedling</option>
+                                <option>Initial Consultation</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-clinical">Preferred Date</label>
+                            <input class="input-clinical" id="bk-date" type="date"/>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-clinical">Message (Optional)</label>
+                            <textarea class="input-clinical" id="bk-message" placeholder="Describe your skin concerns..." style="height:80px;"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
+                            <span class="material-symbols-outlined">send</span>
+                            Send Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Landing Footer ── -->
+    <footer class="landing-footer">
+        <div class="landing-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="brand-logo-container">
+                        <svg class="brand-logo-svg" style="width:36px;height:36px;" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="92" class="logo-outline"/>
+                            <g class="logo-graphic" transform="translate(9,22)">
+                                <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
+                            </g>
+                        </svg>
+                        <div class="brand-text">
+                            <span style="font-family:'Playfair Display',serif;font-size:16px;letter-spacing:0.1em;">LUNA SKIN AESTHETIC</span>
+                        </div>
+                    </div>
+                    <p class="footer-tagline">Where science meets skincare excellence.</p>
+                </div>
+                <div class="footer-links-grid">
+                    <div>
+                        <h4 class="footer-col-title">Treatments</h4>
+                        <ul>
+                            <li>Carbon Laser Peel</li>
+                            <li>HydraFacial</li>
+                            <li>Chemical Peels</li>
+                            <li>RF Tightening</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="footer-col-title">Portals</h4>
+                        <ul>
+                            <li><a href="#" onclick="showPage('auth');setAuthRole('patient');setAuthTab('login')">Patient Login</a></li>
+                            <li><a href="#" onclick="showPage('auth');setAuthRole('patient');setAuthTab('register')">Register</a></li>
+                            <li><a href="#" onclick="showPage('auth');setAuthRole('doctor');setAuthTab('login')">Doctor Portal</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="footer-col-title">Contact</h4>
+                        <ul>
+                            <li>+971 4 123 4567</li>
+                            <li>hello@lunaskin.ae</li>
+                            <li>Business Bay, Dubai</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 Luna Skin Aesthetic. All rights reserved. Non-Medical Aesthetics. We offer exclusively cosmetic treatments and do not perform medical dermatological treatments. Confidential client data protected under GDPR.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Data Protection</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE: AUTH (Login / Register)
+════════════════════════════════════════════════════════════ -->
+<div id="page-auth" class="page-section" style="display:none;">
+    <div class="auth-layout">
+
+        <!-- Left Panel: Branding -->
+        <div class="auth-brand-panel">
+            <div class="auth-brand-overlay"></div>
+            <div class="auth-brand-content">
+                <button class="auth-back-btn" onclick="showPage('landing')">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Back to Home
+                </button>
+                <div class="auth-logo-wrap">
+                    <svg class="brand-logo-svg" style="width:60px;height:60px;color:white;" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="92" stroke="white" stroke-width="1.5" fill="none" opacity="0.6"/>
+                        <g fill="white" transform="translate(9,22)">
+                            <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
+                        </g>
+                    </svg>
+                    <h1 style="font-family:'Playfair Display',serif;font-size:28px;font-weight:600;letter-spacing:0.1em;color:white;margin-top:20px;">LUNA SKIN</h1>
+                    <p style="color:rgba(255,255,255,0.6);letter-spacing:0.15em;font-size:11px;margin-top:4px;">AESTHETIC MEDICINE</p>
+                </div>
+                <div class="auth-brand-quote">
+                    <p>"Your skin is a reflection of your inner health. We're here to help it tell the right story."</p>
+                    <span>— Dr. Elena Vogt, Lead Aesthetic Specialist</span>
+                </div>
+                <div class="auth-brand-stats">
+                    <div class="auth-stat">
+                        <span class="auth-stat-num">2,400+</span>
+                        <span class="auth-stat-label">Patients</span>
+                    </div>
+                    <div class="auth-stat">
+                        <span class="auth-stat-num">12 yrs</span>
+                        <span class="auth-stat-label">Experience</span>
+                    </div>
+                    <div class="auth-stat">
+                        <span class="auth-stat-num">98%</span>
+                        <span class="auth-stat-label">Satisfaction</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Form -->
+        <div class="auth-form-panel">
+            <!-- Role Selector -->
+            <div class="auth-role-selector">
+                <button class="auth-role-btn active" id="auth-role-patient" onclick="setAuthRole('patient')">
+                    <span class="material-symbols-outlined">person</span>
+                    Patient
+                </button>
+                <button class="auth-role-btn" id="auth-role-doctor" onclick="setAuthRole('doctor')">
+                    <span class="material-symbols-outlined">stethoscope</span>
+                    Doctor
+                </button>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="auth-tabs" id="auth-tabs">
+                <button class="auth-tab-btn active" id="tab-login" onclick="setAuthTab('login')">Sign In</button>
+                <button class="auth-tab-btn" id="tab-register" onclick="setAuthTab('register')">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="auth-login-form-wrap">
+                <h2 class="auth-form-title" id="auth-title">Welcome Back</h2>
+                <p class="auth-form-subtitle" id="auth-subtitle">Sign in to access your patient portal</p>
+
+                <form id="auth-login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="label-clinical">Email Address</label>
+                        <div class="input-icon-wrap">
+                            <span class="material-symbols-outlined input-icon">mail</span>
+                            <input class="input-clinical input-with-icon" id="login-email" type="email" placeholder="your@email.com" required/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label-clinical">Password</label>
+                        <div class="input-icon-wrap" style="position:relative;">
+                            <span class="material-symbols-outlined input-icon">lock</span>
+                            <input class="input-clinical input-with-icon" id="login-password" type="password" placeholder="••••••••" required style="padding-right:36px;"/>
+                            <button type="button" class="password-toggle-btn" id="login-pwd-toggle" title="Show/Hide password" onclick="togglePasswordVisibility('login-password','login-pwd-toggle')">
+                                <span class="material-symbols-outlined" style="font-size:20px;">visibility</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="login-error" class="auth-error" style="display:none;"></div>
+                    <div class="auth-patient-hint" id="patient-demo-hint" style="display:flex;">
+                        <span class="material-symbols-outlined" style="font-size:14px;">info</span>
+                        Demo Patient: <strong>priya@patient.com</strong> / <strong>patient123</strong>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:14px;" id="login-submit-btn">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="auth-demo-hint" id="doctor-demo-hint" style="display:none;">
+                    <span class="material-symbols-outlined" style="font-size:14px;">info</span>
+                    Demo: dr.vogt@luna.com / luna2024
+                </div>
+
+                <div class="auth-switch-row" id="auth-switch-to-register">
+                    <span>New patient?</span>
+                    <button onclick="setAuthTab('register')" class="auth-link-btn">Create an account</button>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="auth-register-form-wrap" style="display:none;">
+                <h2 class="auth-form-title">Create Patient Account</h2>
+                <p class="auth-form-subtitle">Register to book appointments and view your case records</p>
+
+                <form id="auth-register-form" onsubmit="handleRegister(event)">
+                    <div class="grid-2" style="gap:16px;">
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="label-clinical">Full Name</label>
+                            <div class="input-icon-wrap">
+                                <span class="material-symbols-outlined input-icon">person</span>
+                                <input class="input-clinical input-with-icon" id="reg-name" type="text" placeholder="Full name" required/>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="label-clinical">Gender</label>
+                            <select class="input-clinical" id="reg-gender" style="padding-left:0;">
+                                <option value="">Select...</option>
+                                <option>Female</option>
+                                <option>Male</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label-clinical">Email Address</label>
+                        <div class="input-icon-wrap">
+                            <span class="material-symbols-outlined input-icon">mail</span>
+                            <input class="input-clinical input-with-icon" id="reg-email" type="email" placeholder="your@email.com" required/>
+                        </div>
+                    </div>
+                    <div class="grid-2" style="gap:16px;">
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="label-clinical">Phone Number</label>
+                            <input class="input-clinical" id="reg-contact" type="tel" placeholder="+971 XX XXX"/>
+                        </div>
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="label-clinical">Date of Birth</label>
+                            <input class="input-clinical" id="reg-dob" type="date"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label-clinical">Password</label>
+                        <div class="input-icon-wrap">
+                            <span class="material-symbols-outlined input-icon">lock</span>
+                            <input class="input-clinical input-with-icon" id="reg-password" type="password" placeholder="Min. 6 characters" required minlength="6"/>
+                        </div>
+                    </div>
+                    <div id="register-error" class="auth-error" style="display:none;"></div>
+                    <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:14px;">
+                        Create Account & Register
+                    </button>
+                </form>
+
+                <div class="auth-switch-row">
+                    <span>Already have an account?</span>
+                    <button onclick="setAuthTab('login')" class="auth-link-btn">Sign in</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE: PATIENT DASHBOARD
+════════════════════════════════════════════════════════════ -->
+<div id="page-patient" class="page-section" style="display:none;">
+    <div class="portal-layout">
+
+        <!-- Patient Sidebar -->
+        <nav class="portal-sidebar" id="patient-sidebar">
+            <div class="portal-sidebar-header">
+                <div class="brand-logo-container" style="gap:10px;">
+                    <svg class="brand-logo-svg" style="width:32px;height:32px;" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="92" class="logo-outline"/>
+                        <g class="logo-graphic" transform="translate(9,22)">
+                            <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
+                        </g>
+                    </svg>
+                    <div class="brand-text">
+                        <span style="font-size:12px;font-family:'Playfair Display',serif;letter-spacing:0.08em;">LUNA</span>
+                        <span style="font-size:7px;margin-top:2px;">SKIN AESTHETICS</span>
+                    </div>
+                </div>
+                <p class="font-label-sm text-secondary" style="margin-top:8px;font-size:9px;">Patient Portal</p>
+            </div>
+
+            <div class="portal-patient-profile">
+                <div class="portal-patient-avatar" id="patient-portal-avatar">
+                    <span class="material-symbols-outlined" style="font-size:28px;">person</span>
+                </div>
+                <div>
+                    <h4 class="font-label-sm" id="patient-portal-name">Loading...</h4>
+                    <p class="font-label-sm text-secondary" id="patient-portal-ref" style="text-transform:none;font-size:10px;">Ref: —</p>
+                </div>
+            </div>
+
+            <div class="sidebar-links">
+                <a class="sidebar-link active" href="#" data-patient-section="overview" onclick="switchPatientSection('overview')">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="font-label-sm">Overview</span>
+                </a>
+                <a class="sidebar-link" href="#" data-patient-section="appointment" onclick="switchPatientSection('appointment')">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    <span class="font-label-sm">My Appointment</span>
+                </a>
+                <a class="sidebar-link" href="#" data-patient-section="case-summary" onclick="switchPatientSection('case-summary')">
+                    <span class="material-symbols-outlined">description</span>
+                    <span class="font-label-sm">Case Summary</span>
+                </a>
+                <a class="sidebar-link" href="#" data-patient-section="prescriptions" onclick="switchPatientSection('prescriptions')">
+                    <span class="material-symbols-outlined">medication</span>
+                    <span class="font-label-sm">My Skincare</span>
+                </a>
+                <a class="sidebar-link" href="#" data-patient-section="gallery" onclick="switchPatientSection('gallery')">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                    <span class="font-label-sm">My Photos</span>
+                </a>
+            </div>
+
+            <div style="margin-top:auto;padding:24px;border-top:1px solid var(--color-outline-variant);">
+                <button class="btn-secondary" style="width:100%;justify-content:center;" onclick="handleLogout()">
+                    <span class="material-symbols-outlined" style="font-size:16px;">logout</span>
+                    Sign Out
+                </button>
+            </div>
+        </nav>
+
+        <!-- Patient Main Content -->
+        <div class="portal-main">
+            <!-- Patient Top Header -->
+            <header class="portal-header">
+                <div>
+                    <h2 class="font-headline-md text-primary" id="patient-section-title">Patient Overview</h2>
+                    <p class="font-label-sm text-secondary" id="patient-section-date" style="margin-top:4px;text-transform:none;font-size:11px;"></p>
+                </div>
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <span class="header-icon material-symbols-outlined" id="theme-toggle-patient" title="Toggle Theme">dark_mode</span>
+                    <div class="portal-patient-avatar" style="width:36px;height:36px;cursor:default;">
+                        <span class="material-symbols-outlined" style="font-size:20px;">person</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Patient Sections -->
+            <div class="portal-content">
+
+                <!-- SECTION: Overview -->
+                <div class="patient-section active" id="ps-overview">
+                    <div class="patient-welcome-banner">
+                        <div>
+                            <h3 class="font-headline-md" id="pt-welcome-name">Good morning!</h3>
+                            <p style="opacity:0.8;margin-top:8px;">Here's a summary of your care journey at Luna Skin Aesthetic.</p>
+                        </div>
+                        <div class="patient-ref-badge">
+                            <p class="font-label-sm" style="font-size:9px;">Patient Ref</p>
+                            <p class="font-body-md" id="pt-ref-display" style="font-family:monospace;font-size:13px;margin-top:2px;">—</p>
+                        </div>
+                    </div>
+
+                    <div class="overview-grid">
+                        <div class="overview-card" onclick="switchPatientSection('appointment')">
+                            <div class="overview-card-icon" style="--oc-color:var(--color-primary);">
+                                <span class="material-symbols-outlined">calendar_month</span>
+                            </div>
+                            <div>
+                                <p class="overview-card-label">Next Appointment</p>
+                                <p class="overview-card-value" id="ov-next-appt">Not scheduled</p>
+                            </div>
+                            <span class="material-symbols-outlined" style="margin-left:auto;opacity:0.4;">chevron_right</span>
+                        </div>
+                        <div class="overview-card" onclick="switchPatientSection('case-summary')">
+                            <div class="overview-card-icon" style="--oc-color:var(--color-tertiary);">
+                                <span class="material-symbols-outlined">biotech</span>
+                            </div>
+                            <div>
+                                <p class="overview-card-label">Primary Concern</p>
+                                <p class="overview-card-value" id="ov-concern">—</p>
+                            </div>
+                            <span class="material-symbols-outlined" style="margin-left:auto;opacity:0.4;">chevron_right</span>
+                        </div>
+                        <div class="overview-card" onclick="switchPatientSection('prescriptions')">
+                            <div class="overview-card-icon" style="--oc-color:var(--color-secondary);">
+                                <span class="material-symbols-outlined">medication</span>
+                            </div>
+                            <div>
+                                <p class="overview-card-label">Prescribed Skincare</p>
+                                <p class="overview-card-value" id="ov-skincare-count">0 products</p>
+                            </div>
+                            <span class="material-symbols-outlined" style="margin-left:auto;opacity:0.4;">chevron_right</span>
+                        </div>
+                        <div class="overview-card">
+                            <div class="overview-card-icon" style="--oc-color:#A47D75;">
+                                <span class="material-symbols-outlined">timeline</span>
+                            </div>
+                            <div>
+                                <p class="overview-card-label">Treatment Status</p>
+                                <p class="overview-card-value" id="ov-status">Active</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Treatment Timeline -->
+                    <div class="case-card" style="margin-top:24px;">
+                        <h3 class="card-title">Treatment Timeline</h3>
+                        <div id="pt-timeline" class="pt-timeline">
+                            <p class="text-secondary" style="text-align:center;font-style:italic;padding:24px 0;">No treatment logs recorded yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: My Appointment -->
+                <div class="patient-section" id="ps-appointment">
+                    <div class="grid-2" style="gap:24px;">
+                        <!-- Current Appointment Card -->
+                        <div class="case-card">
+                            <h3 class="card-title">Current Appointment</h3>
+                            <div id="pt-appt-display">
+                                <div class="appt-display-block">
+                                    <span class="material-symbols-outlined appt-big-icon">event_available</span>
+                                    <div>
+                                        <p class="font-label-sm text-secondary">Date & Time</p>
+                                        <p class="font-headline-md text-primary" id="pt-appt-date-display" style="margin-top:4px;">Not scheduled</p>
+                                        <p class="font-body-md text-secondary" id="pt-appt-time-display" style="margin-top:4px;text-transform:none;"></p>
+                                    </div>
+                                </div>
+                                <div class="appt-purpose-chip" id="pt-appt-purpose-display"></div>
+                            </div>
+                        </div>
+
+                        <!-- Book/Reschedule Appointment -->
+                        <div class="case-card">
+                            <h3 class="card-title">Book / Reschedule</h3>
+                            <form id="patient-booking-form" onsubmit="submitPatientAppointment(event)">
+                                <div class="form-group">
+                                    <label class="label-clinical">Preferred Date</label>
+                                    <input class="input-clinical" id="pt-appt-date" type="date" required/>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-clinical">Preferred Time</label>
+                                    <select class="input-clinical" id="pt-appt-time">
+                                        <option value="09:00 AM">09:00 AM</option>
+                                        <option value="10:30 AM">10:30 AM</option>
+                                        <option value="11:45 AM">11:45 AM</option>
+                                        <option value="01:30 PM">01:30 PM</option>
+                                        <option value="03:00 PM">03:00 PM</option>
+                                        <option value="04:30 PM">04:30 PM</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-clinical">Purpose / Treatment</label>
+                                    <select class="input-clinical" id="pt-appt-purpose">
+                                        <option>Follow-up Consultation</option>
+                                        <option>Carbon Laser Peel</option>
+                                        <option>HydraFacial Deluxe</option>
+                                        <option>Chemical Peel Follow-up</option>
+                                        <option>LED Light Session</option>
+                                        <option>RF Skin Tightening</option>
+                                        <option>Maintenance Consultation</option>
+                                        <option>Initial Consultation</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">calendar_add_on</span>
+                                    Confirm Appointment
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: Case Summary (Read-only) -->
+                <div class="patient-section" id="ps-case-summary">
+                    <div class="case-card" style="margin-bottom:24px;">
+                        <h3 class="card-title">My Skin Profile</h3>
+                        <div class="grid-2" style="gap:32px;">
+                            <div>
+                                <div class="readonly-field">
+                                    <p class="label-clinical">Primary Concern</p>
+                                    <p class="readonly-value" id="cs-concern">—</p>
+                                </div>
+                                <div class="readonly-field">
+                                    <p class="label-clinical">Skin Type</p>
+                                    <p class="readonly-value" id="cs-skintype">—</p>
+                                </div>
+                                <div class="readonly-field">
+                                    <p class="label-clinical">Known Allergies</p>
+                                    <p class="readonly-value" id="cs-allergies">—</p>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="concerns-display">
+                                    <p class="label-clinical" style="margin-bottom:16px;">Active Concerns</p>
+                                    <div id="cs-concerns-pills"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="case-card">
+                        <h3 class="card-title">Treatment Protocol</h3>
+                        <p class="font-body-lg text-primary" id="cs-protocol" style="line-height:1.7;white-space:pre-line;font-style:italic;">
+                            No treatment protocol assigned yet.
+                        </p>
+                    </div>
+
+                    <div class="case-card" style="margin-top:24px;">
+                        <h3 class="card-title">My Skincare Routine</h3>
+                        <p class="font-body-md text-secondary" id="cs-routine" style="white-space:pre-line;text-transform:none;line-height:1.7;">
+                            No routine prescribed yet.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SECTION: Prescriptions -->
+                <div class="patient-section" id="ps-prescriptions">
+                    <div class="case-card">
+                        <h3 class="card-title">Prescribed Skincare Products</h3>
+                        <div id="pt-skincare-list" class="pt-skincare-grid">
+                            <p class="text-secondary" style="text-align:center;font-style:italic;padding:24px 0;">No products prescribed yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: Gallery -->
+                <div class="patient-section" id="ps-gallery">
+                    <div class="case-card">
+                        <h3 class="card-title">Clinical Photography — Before & After</h3>
+                        <div class="grid-2" style="gap:24px;margin-top:8px;">
+                            <div>
+                                <div style="aspect-ratio:4/3;overflow:hidden;border:1px solid var(--color-outline-variant);background:var(--color-surface-container-low);display:flex;align-items:center;justify-content:center;">
+                                    <img id="pt-before-img" src="" alt="Before Treatment" style="width:100%;height:100%;object-fit:cover;display:none;"/>
+                                    <span class="material-symbols-outlined" id="pt-before-placeholder" style="font-size:48px;opacity:0.2;">hide_image</span>
+                                </div>
+                                <p class="font-label-sm" style="margin-top:8px;">Before Treatment</p>
+                                <p class="font-body-md text-secondary" id="pt-before-date" style="font-size:12px;text-transform:none;"></p>
+                            </div>
+                            <div>
+                                <div style="aspect-ratio:4/3;overflow:hidden;border:1px solid var(--color-outline-variant);background:var(--color-surface-container-low);display:flex;align-items:center;justify-content:center;">
+                                    <img id="pt-after-img" src="" alt="After Treatment" style="width:100%;height:100%;object-fit:cover;display:none;"/>
+                                    <span class="material-symbols-outlined" id="pt-after-placeholder" style="font-size:48px;opacity:0.2;">hide_image</span>
+                                </div>
+                                <p class="font-label-sm" style="margin-top:8px;">After Treatment</p>
+                                <p class="font-body-md text-secondary" id="pt-after-date" style="font-size:12px;text-transform:none;"></p>
+                            </div>
+                        </div>
+                        <p class="font-label-sm text-secondary" style="margin-top:24px;text-transform:none;font-style:italic;opacity:0.6;">Photos are captured under standardized clinical lighting by your practitioner.</p>
+                    </div>
+                </div>
+
+            </div><!-- end portal-content -->
+        </div><!-- end portal-main -->
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE: DOCTOR PORTAL (Clinical Portal)
+════════════════════════════════════════════════════════════ -->
+<div id="page-doctor" class="page-section" style="display:none;">
+
+    <!-- Main Sidebar Navigation -->
+    <nav class="sidebar-nav" id="sidebar-nav">
+        <div style="padding:0 24px;margin-bottom:32px;display:flex;flex-direction:column;gap:16px;">
+            <div class="brand-logo-container" style="gap:10px;">
+                <svg class="brand-logo-svg" style="width:32px;height:32px;" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="92" class="logo-outline"/>
+                    <g class="logo-graphic" transform="translate(9,22)">
+                        <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
+                        <g transform="translate(120,52) scale(0.85) rotate(-12)">
+                            <path d="M 2,-2 C 6,-12 18,-10 14,-2 C 12,2 4,1 2,2 C 6,6 12,10 9,14 C 6,18 0,10 2,-2 Z"/>
+                            <path d="M -1,-2 C -4,-10 -12,-8 -9,-2 C -8,1 -3,1 -1,2 C -4,5 -8,8 -6,11 C -4,14 0,8 -1,-2 Z"/>
+                        </g>
+                    </g>
+                </svg>
+                <div class="brand-text">
+                    <span class="brand-name" style="font-size:14px;font-family:'Playfair Display',serif;letter-spacing:0.08em;text-transform:uppercase;">LUNA</span>
+                    <span class="brand-subname" style="font-size:7px;margin-top:2px;">SKIN AESTHETICS</span>
+                </div>
+            </div>
+            <div style="border-top:1px solid var(--color-outline-variant);padding-top:12px;">
+                <h2 class="font-headline-md text-primary" style="font-size:16px;letter-spacing:0.05em;text-transform:uppercase;font-weight:600;">Aesthetic Portal</h2>
+                <p class="font-label-sm text-secondary" style="margin-top:2px;font-size:9px;">Aesthetic Specialist</p>
             </div>
         </div>
         <div class="sidebar-links">
@@ -57,45 +937,47 @@
                 <span class="font-label-sm">Protocol</span>
             </a>
             <a class="sidebar-link" href="#appointment-scheduler" data-section="appointment-scheduler">
-                <span class="material-symbols-outlined">event_upcoming</span>
-                <span class="font-label-sm">Next Steps</span>
+                <span class="material-symbols-outlined">calendar_month</span>
+                <span class="font-label-sm">Appointments</span>
             </a>
             <a class="sidebar-link" href="#clinical-photography" data-section="clinical-photography">
                 <span class="material-symbols-outlined">photo_camera</span>
                 <span class="font-label-sm">Photography</span>
             </a>
         </div>
-        
-        <!-- Quick Stats / Practitioner info at bottom of sidebar -->
-        <div style="margin-top: auto; padding: 24px; border-top: 1px solid var(--color-outline-variant);">
-            <div class="align-center" style="gap: 12px;">
-                <div class="profile-avatar" style="width: 40px; height: 40px;">
+
+        <div style="margin-top:auto;padding:24px;border-top:1px solid var(--color-outline-variant);">
+            <div class="align-center" style="gap:12px;margin-bottom:16px;">
+                <div class="profile-avatar" style="width:40px;height:40px;">
                     <img alt="Practitioner Profile" src="practitioner.jpg"/>
                 </div>
                 <div>
-                    <h4 class="font-label-sm text-primary" style="font-size: 11px;">Dr. Elena Vogt</h4>
-                    <p class="font-label-sm text-secondary" style="font-size: 9px; text-transform: none;">Lead Dermatologist</p>
+                    <h4 class="font-label-sm text-primary" id="doctor-sidebar-name" style="font-size:11px;">Dr. Elena Vogt</h4>
+                    <p class="font-label-sm text-secondary" style="font-size:9px;text-transform:none;">Lead Aesthetic Practitioner</p>
                 </div>
             </div>
+            <button class="btn-secondary" style="width:100%;justify-content:center;font-size:10px;padding:8px 12px;" onclick="handleLogout()">
+                <span class="material-symbols-outlined" style="font-size:14px;">logout</span>
+                Sign Out
+            </button>
         </div>
     </nav>
 
-    <!-- Main Workspace Container -->
+    <!-- Doctor Main App Container -->
     <div class="app-container">
         <div class="main-content">
-            
+
             <!-- Global Top Navigation Header -->
             <header class="app-header">
                 <div class="logo-area">
                     <div class="brand-logo-container">
                         <svg class="brand-logo-svg" viewBox="0 0 200 200">
-                            <circle cx="100" cy="100" r="92" class="logo-outline" />
-                            <g class="logo-graphic" transform="translate(9, 22)">
-                                <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z" />
-                                <g transform="translate(120, 52) scale(0.85) rotate(-12)">
-                                    <path d="M 2,-2 C 6,-12 18,-10 14,-2 C 12,2 4,1 2,2 C 6,6 12,10 9,14 C 6,18 0,10 2,-2 Z" />
-                                    <path d="M -1,-2 C -4,-10 -12,-8 -9,-2 C -8,1 -3,1 -1,2 C -4,5 -8,8 -6,11 C -4,14 0,8 -1,-2 Z" />
-                                    <path d="M 0,-4 C 1,-9 6,-11 9,-10 M 0,-4 C -1,-9 -4,-11 -6,-10" fill="none" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" />
+                            <circle cx="100" cy="100" r="92" class="logo-outline"/>
+                            <g class="logo-graphic" transform="translate(9,22)">
+                                <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
+                                <g transform="translate(120,52) scale(0.85) rotate(-12)">
+                                    <path d="M 2,-2 C 6,-12 18,-10 14,-2 C 12,2 4,1 2,2 C 6,6 12,10 9,14 C 6,18 0,10 2,-2 Z"/>
+                                    <path d="M -1,-2 C -4,-10 -12,-8 -9,-2 C -8,1 -3,1 -1,2 C -4,5 -8,8 -6,11 C -4,14 0,8 -1,-2 Z"/>
                                 </g>
                             </g>
                         </svg>
@@ -104,39 +986,34 @@
                         </div>
                     </div>
                     <div class="tab-nav">
-                        <span class="tab-btn" id="tab-case-sheets">Clinical Sheets</span>
+                        <span class="tab-btn" id="tab-case-sheets">Case Sheets</span>
                         <span class="tab-btn active" id="tab-patient-list">Patient List</span>
                     </div>
                 </div>
-                
+
                 <div class="header-actions">
-                    <!-- Theme Toggle -->
-                    <span class="header-icon material-symbols-outlined" id="theme-toggle" title="Toggle Clinical Theme">dark_mode</span>
-                    <!-- Action Icons -->
+                    <span class="header-icon material-symbols-outlined" id="theme-toggle" title="Toggle Theme">dark_mode</span>
                     <div class="header-icon-wrapper">
                         <span class="header-icon material-symbols-outlined" id="notif-btn">notifications</span>
                         <span class="notif-badge" id="notif-badge">4</span>
                     </div>
                     <span class="header-icon material-symbols-outlined" id="settings-btn">settings</span>
-                    
-                    <!-- Practitioner Avatar -->
                     <div class="profile-avatar">
                         <img alt="Practitioner Profile" src="practitioner.jpg"/>
                     </div>
                 </div>
             </header>
 
-            <!-- CASE SHEETS VIEW CONTAINER -->
-            <div id="case-sheet-view" class="view-panel" style="display: none;">
-                
-                <!-- Patient Info Header Sticky Banner -->
+            <!-- CASE SHEETS VIEW -->
+            <div id="case-sheet-view" class="view-panel" style="display:none;">
+
                 <div class="patient-action-bar">
                     <div class="left-info">
                         <div class="patient-title-row">
-                            <h2 class="font-headline-md text-primary" id="patient-banner-title">Case Sheet: Farook Al-Aziz</h2>
+                            <h2 class="font-headline-md text-primary" id="patient-banner-title">Case Sheet</h2>
                             <span class="status-badge" id="patient-banner-status">Active</span>
                         </div>
-                        <p class="text-secondary font-label-sm" style="margin-top: 4px;" id="patient-banner-ref">Ref ID: LSA-2024-00892</p>
+                        <p class="text-secondary font-label-sm" style="margin-top:4px;" id="patient-banner-ref">Ref ID: —</p>
                     </div>
                     <div class="action-buttons">
                         <button class="btn-secondary font-label-sm" id="export-pdf-btn">
@@ -148,107 +1025,93 @@
                     </div>
                 </div>
 
-                <!-- Main Diagnostic Work Panel -->
                 <main class="main-layout">
-                    
-                    <!-- SECTION 1: Personal Details & Health History -->
+
+                    <!-- SECTION 1: Personal Details -->
                     <section class="grid-2 scroll-section" id="personal-details">
-                        <!-- Personal Details Card -->
                         <div class="case-card">
                             <h3 class="card-title">I. Personal Details</h3>
                             <div class="grid-2">
                                 <div class="form-group">
                                     <label class="label-clinical">Full Name</label>
-                                    <input class="input-clinical font-body-md" id="patient-name" type="text" value="Farook Al-Aziz"/>
+                                    <input class="input-clinical font-body-md" id="patient-name" type="text"/>
                                 </div>
                                 <div class="form-group">
                                     <label class="label-clinical">Age</label>
-                                    <input class="input-clinical font-body-md" id="patient-age" type="text" value="34"/>
+                                    <input class="input-clinical font-body-md" id="patient-age" type="text"/>
                                 </div>
                                 <div class="form-group">
                                     <label class="label-clinical">Gender</label>
-                                    <input class="input-clinical font-body-md" id="patient-gender" type="text" value="Male"/>
+                                    <input class="input-clinical font-body-md" id="patient-gender" type="text"/>
                                 </div>
                                 <div class="form-group">
                                     <label class="label-clinical">Contact Number</label>
-                                    <input class="input-clinical font-body-md" id="patient-contact" type="text" value="+971 50 123 4567"/>
+                                    <input class="input-clinical font-body-md" id="patient-contact" type="text"/>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Health History Card -->
+
                         <div class="case-card">
                             <h3 class="card-title">II. Health History</h3>
-                            <div class="form-group" style="margin-bottom: 20px;">
+                            <div class="form-group" style="margin-bottom:20px;">
                                 <label class="label-clinical">Known Allergies</label>
-                                <input class="input-clinical font-body-md" id="patient-allergies" placeholder="e.g. Salicylic Acid, Latex" type="text" value=""/>
+                                <input class="input-clinical font-body-md" id="patient-allergies" type="text"/>
                             </div>
                             <div class="form-group">
                                 <label class="label-clinical">Current Medications</label>
-                                <input class="input-clinical font-body-md" id="patient-medications" type="text" value="None reported"/>
+                                <input class="input-clinical font-body-md" id="patient-medications" type="text"/>
                             </div>
                         </div>
                     </section>
 
-                    <!-- SECTION 2: Skincare Profile & Past Procedures -->
+                    <!-- SECTION 2: Skincare Profile -->
                     <section class="grid-12 scroll-section" id="skincare-profile">
-                        <!-- Skincare Profile Column -->
                         <div class="col-5 case-card">
                             <h3 class="card-title">III. Skincare Profile</h3>
-                            <div class="form-group" style="margin-bottom: 24px;">
+                            <div class="form-group" style="margin-bottom:24px;">
                                 <label class="label-clinical">Current Routine</label>
-                                <textarea class="input-clinical font-body-md" id="patient-routine" placeholder="Enter morning/night routine steps..."></textarea>
+                                <textarea class="input-clinical font-body-md" id="patient-routine"></textarea>
                             </div>
                             <div class="grid-2">
                                 <div class="form-group">
                                     <label class="label-clinical">Skin Type</label>
                                     <select class="input-clinical font-body-md" id="patient-skintype">
-                                        <option value="Combination">Combination</option>
-                                        <option value="Oily">Oily</option>
-                                        <option value="Dry">Dry</option>
-                                        <option value="Sensitive">Sensitive</option>
+                                        <option>Combination</option>
+                                        <option>Oily</option>
+                                        <option>Dry</option>
+                                        <option>Sensitive</option>
+                                        <option>Normal</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label class="label-clinical">Primary Concern</label>
-                                    <input class="input-clinical font-body-md" id="patient-concern" type="text" value="Post-Inflammatory Hyperpigmentation"/>
+                                    <input class="input-clinical font-body-md" id="patient-concern" type="text"/>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Past Clinical Procedures Column -->
-                        <div class="col-7 case-card" style="display: flex; flex-direction: column;">
-                            <h3 class="card-title">IV. Past Clinical Procedures</h3>
-                            <div class="table-clinical-container" style="flex: 1;">
+
+                        <div class="col-7 case-card" style="display:flex;flex-direction:column;">
+                            <h3 class="card-title">IV. Past Cosmetic Procedures</h3>
+                            <div class="table-clinical-container" style="flex:1;">
                                 <table class="table-clinical" id="procedures-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Procedure Name</th>
-                                            <th>Date</th>
-                                            <th>Clinic</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Dynamic rows -->
-                                    </tbody>
+                                    <thead><tr><th>Procedure Name</th><th>Date</th><th>Location</th></tr></thead>
+                                    <tbody></tbody>
                                 </table>
                             </div>
                             <div class="table-action-row">
                                 <button class="link-btn-clinical" id="add-procedure-btn">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">add_circle</span>
+                                    <span class="material-symbols-outlined" style="font-size:16px;">add_circle</span>
                                     <span>Add Historical Entry</span>
                                 </button>
                             </div>
                         </div>
                     </section>
 
-                    <!-- SECTION 3: Diagnostic Analysis & Notes -->
+                    <!-- SECTION 3: Diagnostic Analysis -->
                     <section class="case-card scroll-section" id="diagnostic-analysis">
-                        <h3 class="card-title">V. Diagnostic Analysis</h3>
+                        <h3 class="card-title">V. Aesthetic Analysis</h3>
                         <div class="grid-12">
-                            <!-- Toggle Checklist -->
                             <div class="col-4" id="concerns-checklist">
-                                <!-- Dynamic check options -->
                                 <div class="checklist-item">
                                     <span>Hyperpigmentation</span>
                                     <input type="checkbox" class="checkbox-clinical" id="chk-hyperpigmentation" data-concern="hyperpigmentation"/>
@@ -266,169 +1129,147 @@
                                     <input type="checkbox" class="checkbox-clinical" id="chk-dehydration" data-concern="dehydration"/>
                                 </div>
                             </div>
-                            
-                            <!-- Practitioner Notes -->
                             <div class="col-8">
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label class="label-clinical" style="opacity: 0.6; margin-bottom: 12px;">Practitioner Observations</label>
-                                    <textarea class="input-clinical font-body-md" id="practitioner-notes" style="height: 160px;" placeholder="Enter clinical observations, skin barrier state, and microscopic analysis notes..."></textarea>
-                                    <p class="font-label-sm text-secondary" style="margin-top: 8px; text-transform: none; text-align: right; font-style: italic;" id="autosave-indicator">Saved as Draft</p>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label class="label-clinical" style="opacity:0.6;margin-bottom:12px;">Practitioner Observations</label>
+                                    <textarea class="input-clinical font-body-md" id="practitioner-notes" style="height:160px;"></textarea>
+                                    <p class="font-label-sm text-secondary" style="margin-top:8px;text-transform:none;text-align:right;font-style:italic;" id="autosave-indicator">Saved as Draft</p>
                                 </div>
                             </div>
                         </div>
                     </section>
 
-                    <!-- SECTION 4: Treatment Protocols & Log charts -->
+                    <!-- SECTION 4: Treatment Protocols -->
                     <section class="grid-2 scroll-section" id="treatment-protocol">
-                        <!-- Corrective Plan Summary -->
-                        <div class="case-card" style="display: flex; flex-direction: column;">
+                        <div class="case-card" style="display:flex;flex-direction:column;">
                             <h3 class="card-title">VI. Treatment Protocol</h3>
-                            <div style="flex: 1; display: flex; align-items: flex-start; flex-direction: column; gap: 12px;">
-                                <p class="font-body-lg text-primary" id="protocol-summary-text" style="line-height: 1.6; font-style: italic; white-space: pre-line;">
-                                    Loading treatment corrective plan...
-                                </p>
-                                <!-- Protocol edit area (hidden by default) -->
-                                <div id="protocol-edit-area" style="display: none; width: 100%;">
-                                    <textarea class="input-clinical font-body-md" id="protocol-edit-textarea" style="height: 180px; width: 100%;" placeholder="Enter treatment protocol and corrective plan steps..."></textarea>
+                            <div style="flex:1;display:flex;align-items:flex-start;flex-direction:column;gap:12px;">
+                                <p class="font-body-lg text-primary" id="protocol-summary-text" style="line-height:1.6;font-style:italic;white-space:pre-line;">Loading...</p>
+                                <div id="protocol-edit-area" style="display:none;width:100%;">
+                                    <textarea class="input-clinical font-body-md" id="protocol-edit-textarea" style="height:180px;width:100%;"></textarea>
                                 </div>
                             </div>
-                            <div class="table-action-row" style="margin-top: 16px;">
+                            <div class="table-action-row" style="margin-top:16px;">
                                 <button class="link-btn-clinical" id="edit-protocol-btn">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+                                    <span class="material-symbols-outlined" style="font-size:16px;">edit</span>
                                     <span>Edit Protocol</span>
                                 </button>
-                                <button class="link-btn-clinical" id="save-protocol-btn" style="display: none;">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">save</span>
+                                <button class="link-btn-clinical" id="save-protocol-btn" style="display:none;">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">save</span>
                                     <span>Save Protocol</span>
                                 </button>
                             </div>
                         </div>
-                        
-                        <!-- Products Provided / Prescribed -->
-                        <div class="case-card" style="display: flex; flex-direction: column;">
+
+                        <div class="case-card" style="display:flex;flex-direction:column;">
                             <h3 class="card-title">VII. Skincare Provided</h3>
-                            <div class="table-clinical-container" style="flex: 1;">
+                            <div class="table-clinical-container" style="flex:1;">
                                 <table class="table-clinical" id="products-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Product Name</th>
-                                            <th>Instructions</th>
-                                            <th style="text-align: right;">Quantity</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Dynamic items -->
-                                    </tbody>
+                                    <thead><tr><th>Product Name</th><th>Instructions</th><th style="text-align:right;">Qty</th></tr></thead>
+                                    <tbody></tbody>
                                 </table>
                             </div>
                             <div class="table-action-row">
                                 <button class="link-btn-clinical" id="add-product-btn">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">add_circle</span>
+                                    <span class="material-symbols-outlined" style="font-size:16px;">add_circle</span>
                                     <span>Prescribe Skincare</span>
                                 </button>
                             </div>
                         </div>
-                        
-                        <!-- Chronological Treatment Log -->
-                        <div class="case-card col-12" style="grid-column: span 2;">
+
+                        <div class="case-card col-12" style="grid-column:span 2;">
                             <h3 class="card-title">VIII. Chronological Treatment Log</h3>
                             <div class="table-clinical-container">
                                 <table class="table-clinical" id="treatment-log-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Treatment & Settings</th>
-                                            <th>Reaction</th>
-                                            <th>Notes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Dynamic rows -->
-                                    </tbody>
+                                    <thead><tr><th>Date</th><th>Treatment & Settings</th><th>Reaction</th><th>Notes</th></tr></thead>
+                                    <tbody></tbody>
                                 </table>
                             </div>
                             <div class="table-action-row">
                                 <button class="link-btn-clinical" id="add-log-entry-btn">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">add_circle</span>
+                                    <span class="material-symbols-outlined" style="font-size:16px;">add_circle</span>
                                     <span>Add Progress Log</span>
                                 </button>
                             </div>
                         </div>
                     </section>
 
-                    <!-- SECTION 5: Appointments calendar and Digital Signatures -->
-                    <section class="grid-12 scroll-section" id="appointment-scheduler">
-                        <!-- Scheduler & Calendar widget -->
-                        <div class="col-8 case-card">
-                            <h3 class="card-title">IX. Appointment Scheduler</h3>
-                            <div class="calendar-widget">
-                                <div class="calendar-box">
-                                    <div class="calendar-header">
-                                        <span class="font-label-sm font-bold" style="font-size: 13px;" id="calendar-month-year">June 2024</span>
-                                        <div style="display: flex; gap: 8px;">
-                                            <span class="material-symbols-outlined header-icon" id="cal-prev-btn" style="padding: 4px; font-size: 20px;">chevron_left</span>
-                                            <span class="material-symbols-outlined header-icon" id="cal-next-btn" style="padding: 4px; font-size: 20px;">chevron_right</span>
+                    <!-- SECTION 5: Appointment Scheduler (Enhanced) -->
+                    <section class="scroll-section" id="appointment-scheduler" style="display:flex;flex-direction:column;gap:24px;">
+                        <div class="grid-12" style="align-items:start;">
+                            <!-- Calendar Widget (Enhanced) -->
+                            <div class="col-8 case-card">
+                                <h3 class="card-title">IX. Doctor Appointment Calendar</h3>
+                                <div class="calendar-widget">
+                                    <div class="calendar-box">
+                                        <div class="calendar-header">
+                                            <span class="font-label-sm font-bold" style="font-size:13px;" id="calendar-month-year">July 2026</span>
+                                            <div style="display:flex;gap:8px;">
+                                                <span class="material-symbols-outlined header-icon" id="cal-prev-btn" style="padding:4px;font-size:20px;">chevron_left</span>
+                                                <span class="material-symbols-outlined header-icon" id="cal-next-btn" style="padding:4px;font-size:20px;">chevron_right</span>
+                                            </div>
+                                        </div>
+                                        <div class="calendar-days-grid" id="calendar-grid"></div>
+                                    </div>
+                                    <div class="scheduler-info-panel">
+                                        <div class="next-visit-card">
+                                            <p class="font-label-sm text-secondary" style="opacity:0.7;">Next Scheduled Visit</p>
+                                            <p class="font-headline-md text-primary" style="margin-top:8px;" id="schedule-date-text">Select a date</p>
+                                            <p class="font-body-md text-secondary" style="margin-top:4px;text-transform:none;" id="schedule-time-text"></p>
+                                        </div>
+                                        <div style="display:flex;gap:16px;">
+                                            <button class="btn-primary" id="confirm-booking-btn" style="flex:1;">Confirm Booking</button>
+                                            <button class="btn-secondary" id="reschedule-btn" style="flex:1;">Reschedule</button>
                                         </div>
                                     </div>
-                                    <div class="calendar-days-grid" id="calendar-grid">
-                                        <!-- Days rendered via JavaScript -->
-                                    </div>
                                 </div>
-                                <div class="scheduler-info-panel">
-                                    <div class="next-visit-card">
-                                        <p class="font-label-sm text-secondary" style="opacity: 0.7;">Next Scheduled Visit</p>
-                                        <p class="font-headline-md text-primary" style="margin-top: 8px;" id="schedule-date-text">Wednesday, June 12th</p>
-                                        <p class="font-body-md text-secondary" style="margin-top: 4px;" id="schedule-time-text">10:30 AM — Chemical Peel Follow-up</p>
-                                    </div>
-                                    <div style="display: flex; gap: 16px;">
-                                        <button class="btn-primary" id="confirm-booking-btn" style="flex: 1;">Confirm Booking</button>
-                                        <button class="btn-secondary" id="reschedule-btn" style="flex: 1;">Reschedule</button>
-                                    </div>
+                            </div>
+
+                            <!-- Signature Card -->
+                            <div class="col-4 case-card signature-card" id="signature-block">
+                                <span class="material-symbols-outlined signature-stamp-icon" id="signature-stamp">verified_user</span>
+                                <h4 class="font-headline-md" style="font-size:20px;text-transform:uppercase;" id="signature-status-text">Protocol Verified</h4>
+                                <p class="font-body-md text-secondary" style="margin-top:8px;font-size:13px;color:rgba(255,255,255,0.8);" id="signature-desc">Reviewed and digitally signed.</p>
+                                <button class="btn-secondary font-label-sm" id="verify-protocol-btn" style="margin-top:24px;display:none;">Verify Protocol</button>
+                                <div class="signature-stamp-line" id="signature-stamp-line">
+                                    <p class="font-label-sm" style="font-size:9px;opacity:0.5;">DIGITAL SIGNATURE ID</p>
+                                    <p class="font-body-md font-mono" id="signature-hash-id" style="margin-top:4px;font-size:12px;font-family:monospace;color:rgba(255,255,255,0.7);">#882-LUNA-SAFE-921</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Verification Stamp Card -->
-                        <div class="col-4 case-card signature-card" id="signature-block">
-                            <span class="material-symbols-outlined signature-stamp-icon" id="signature-stamp">verified_user</span>
-                            <h4 class="font-headline-md" style="font-size: 20px; text-transform: uppercase;" id="signature-status-text">Protocol Verified</h4>
-                            <p class="font-body-md text-secondary" style="margin-top: 8px; font-size: 13px; color: rgba(255, 255, 255, 0.8);" id="signature-desc">This case sheet has been clinically reviewed and digitally signed by Lead Practitioner Dr. Elena Vogt.</p>
-                            
-                            <button class="btn-secondary font-label-sm" id="verify-protocol-btn" style="margin-top: 24px; display: none;">Verify Protocol</button>
-                            
-                            <div class="signature-stamp-line" id="signature-stamp-line">
-                                <p class="font-label-sm" style="font-size: 9px; opacity: 0.5;">DIGITAL SIGNATURE ID</p>
-                                <p class="font-body-md font-mono" id="signature-hash-id" style="margin-top: 4px; font-size: 12px; font-family: monospace; color: rgba(255,255,255,0.7);">#882-LUNA-SAFE-921</p>
+                        <!-- Day Schedule Panel (All Appointments for Selected Day) -->
+                        <div class="case-card" id="day-schedule-panel">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                                <h3 class="card-title" style="margin-bottom:0;border:none;padding:0;" id="day-schedule-title">Today's Schedule</h3>
+                                <span class="status-badge" id="day-schedule-count">0 appointments</span>
+                            </div>
+                            <div id="day-schedule-list">
+                                <p class="text-secondary" style="text-align:center;font-style:italic;padding:24px 0;">Select a date to view the schedule.</p>
                             </div>
                         </div>
                     </section>
 
-                    <!-- SECTION 6: Clinical photography before & after -->
+                    <!-- SECTION 6: Aesthetic Photography -->
                     <section class="case-card scroll-section" id="clinical-photography">
                         <div class="clinical-photos-header">
-                            <h3 class="card-title" style="margin-bottom: 0; border: none; padding: 0;">X. Clinical Photography (Before & After)</h3>
+                            <h3 class="card-title" style="margin-bottom:0;border:none;padding:0;">X. Aesthetic Photography (Before & After)</h3>
                             <div class="photo-mode-toggle">
                                 <button class="photo-mode-btn active" id="photo-mode-split">Interactive Split</button>
                                 <button class="photo-mode-btn" id="photo-mode-side">Side-by-Side</button>
                             </div>
                         </div>
 
-                        <!-- Mode A: Interactive Split Slider -->
                         <div class="photo-view-section active" id="photo-view-split">
                             <div class="slider-container" id="slider-container">
-                                <!-- After Image (Background) -->
                                 <div class="slider-img slider-img-after">
                                     <img alt="After Treatment (8 Weeks)" src="after_treatment.jpg" draggable="false"/>
                                 </div>
-                                <!-- Before Image (Foreground, dynamic width) -->
                                 <div class="slider-img slider-img-before" id="slider-before-img">
                                     <img alt="Before Treatment" src="before_treatment.jpg" draggable="false"/>
                                 </div>
-                                
                                 <span class="slider-label before">BEFORE</span>
-                                <span class="slider-label after">8 WEEKS AFTER</span>
-                                
-                                <!-- Slider drag handle -->
+                                <span class="slider-label after">AFTER</span>
                                 <div class="slider-handle" id="slider-handle">
                                     <div class="slider-handle-circle">
                                         <span class="material-symbols-outlined">unfold_more_double</span>
@@ -437,89 +1278,76 @@
                             </div>
                         </div>
 
-                        <!-- Mode B: Static Side-by-Side Images -->
                         <div class="photo-view-section" id="photo-view-side">
                             <div class="grid-2">
-                                <div style="display: flex; flex-direction: column; gap: 12px;">
-                                    <div style="aspect-ratio: 16/9; overflow: hidden; border: 1px solid var(--color-outline-variant);">
-                                        <img alt="Before Treatment" src="before_treatment.jpg" style="width:100%; height:100%; object-fit:cover; display:block;"/>
+                                <div style="display:flex;flex-direction:column;gap:12px;">
+                                    <div style="aspect-ratio:16/9;overflow:hidden;border:1px solid var(--color-outline-variant);">
+                                        <img alt="Before Treatment" src="before_treatment.jpg" style="width:100%;height:100%;object-fit:cover;display:block;"/>
                                     </div>
                                     <div class="flex-between">
-                                        <span class="font-label-sm" style="font-weight: 700;">BEFORE TREATMENT</span>
-                                        <span class="font-body-md text-secondary" id="patient-photo-before-date">May 02, 2024</span>
+                                        <span class="font-label-sm" style="font-weight:700;">BEFORE TREATMENT</span>
+                                        <span class="font-body-md text-secondary" id="patient-photo-before-date"></span>
                                     </div>
                                 </div>
-                                <div style="display: flex; flex-direction: column; gap: 12px;">
-                                    <div style="aspect-ratio: 16/9; overflow: hidden; border: 1px solid var(--color-outline-variant);">
-                                        <img alt="After Treatment (8 Weeks)" src="after_treatment.jpg" style="width:100%; height:100%; object-fit:cover; display:block;"/>
+                                <div style="display:flex;flex-direction:column;gap:12px;">
+                                    <div style="aspect-ratio:16/9;overflow:hidden;border:1px solid var(--color-outline-variant);">
+                                        <img alt="After Treatment (8 Weeks)" src="after_treatment.jpg" style="width:100%;height:100%;object-fit:cover;display:block;"/>
                                     </div>
                                     <div class="flex-between">
-                                        <span class="font-label-sm" style="font-weight: 700;">AFTER - 8 WEEKS</span>
-                                        <span class="font-body-md text-secondary" id="patient-photo-after-date">June 27, 2024</span>
+                                        <span class="font-label-sm" style="font-weight:700;">AFTER TREATMENT</span>
+                                        <span class="font-body-md text-secondary" id="patient-photo-after-date"></span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Update/Add Images Panel -->
-                        <div class="photo-upload-panel" id="photo-upload-panel" style="margin-top: 32px; border-top: 1px solid var(--color-outline-variant); padding-top: 24px;">
-                            <h4 class="font-label-sm text-primary" style="margin-bottom: 16px;">Update Clinical Photography</h4>
+                        <div class="photo-upload-panel" id="photo-upload-panel" style="margin-top:32px;border-top:1px solid var(--color-outline-variant);padding-top:24px;">
+                            <h4 class="font-label-sm text-primary" style="margin-bottom:16px;">Update Aesthetic Photos</h4>
                             <div class="grid-2">
-                                <!-- Before Image Upload -->
                                 <div class="upload-zone" id="upload-zone-before">
-                                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-secondary); margin-bottom: 8px;">add_a_photo</span>
-                                    <p class="font-label-sm" style="font-size: 11px;">Upload Before Photo</p>
-                                    <p class="font-body-md text-secondary" style="font-size: 12px; margin-top: 4px; text-transform: none;">Drag & drop or click to browse</p>
-                                    <input type="file" id="input-upload-before" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;"/>
-                                    
-                                    <!-- Date Picker for Before Image -->
-                                    <div class="form-group" style="margin-top: 16px; margin-bottom: 0; text-align: left;" onclick="event.stopPropagation();">
-                                        <label class="label-clinical" style="font-size: 9px;">Photo Date</label>
-                                        <input class="input-clinical font-body-md" id="upload-before-date" type="date" style="font-size: 12px; padding: 4px 0;"/>
+                                    <span class="material-symbols-outlined" style="font-size:32px;color:var(--color-secondary);margin-bottom:8px;">add_a_photo</span>
+                                    <p class="font-label-sm" style="font-size:11px;">Upload Before Photo</p>
+                                    <p class="font-body-md text-secondary" style="font-size:12px;margin-top:4px;text-transform:none;">Drag & drop or click to browse</p>
+                                    <input type="file" id="input-upload-before" accept="image/*" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;"/>
+                                    <div class="form-group" style="margin-top:16px;margin-bottom:0;text-align:left;" onclick="event.stopPropagation();">
+                                        <label class="label-clinical" style="font-size:9px;">Photo Date</label>
+                                        <input class="input-clinical font-body-md" id="upload-before-date" type="date" style="font-size:12px;padding:4px 0;"/>
                                     </div>
                                 </div>
-
-                                <!-- After Image Upload -->
                                 <div class="upload-zone" id="upload-zone-after">
-                                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-secondary); margin-bottom: 8px;">add_a_photo</span>
-                                    <p class="font-label-sm" style="font-size: 11px;">Upload After Photo</p>
-                                    <p class="font-body-md text-secondary" style="font-size: 12px; margin-top: 4px; text-transform: none;">Drag & drop or click to browse</p>
-                                    <input type="file" id="input-upload-after" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;"/>
-                                    
-                                    <!-- Date Picker for After Image -->
-                                    <div class="form-group" style="margin-top: 16px; margin-bottom: 0; text-align: left;" onclick="event.stopPropagation();">
-                                        <label class="label-clinical" style="font-size: 9px;">Photo Date</label>
-                                        <input class="input-clinical font-body-md" id="upload-after-date" type="date" style="font-size: 12px; padding: 4px 0;"/>
+                                    <span class="material-symbols-outlined" style="font-size:32px;color:var(--color-secondary);margin-bottom:8px;">add_a_photo</span>
+                                    <p class="font-label-sm" style="font-size:11px;">Upload After Photo</p>
+                                    <p class="font-body-md text-secondary" style="font-size:12px;margin-top:4px;text-transform:none;">Drag & drop or click to browse</p>
+                                    <input type="file" id="input-upload-after" accept="image/*" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;"/>
+                                    <div class="form-group" style="margin-top:16px;margin-bottom:0;text-align:left;" onclick="event.stopPropagation();">
+                                        <label class="label-clinical" style="font-size:9px;">Photo Date</label>
+                                        <input class="input-clinical font-body-md" id="upload-after-date" type="date" style="font-size:12px;padding:4px 0;"/>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <p class="font-label-sm text-secondary" style="margin-top: 24px; text-transform: none; font-style: italic; opacity: 0.6;">
-                            Photos captured under standardized clinical lighting (Polarized/UV).
-                        </p>
+                        <p class="font-label-sm text-secondary" style="margin-top:24px;text-transform:none;font-style:italic;opacity:0.6;">Photos captured under standardized clinical lighting (Polarized/UV).</p>
                     </section>
 
                 </main>
             </div>
 
-            <!-- PATIENT LIST VIEW CONTAINER (Hidden by default) -->
+            <!-- PATIENT LIST VIEW -->
             <div id="patient-list-view" class="view-panel">
                 <main class="patient-list-section">
                     <div class="patient-table-card">
-                        <h2 class="font-headline-md text-primary" style="margin-bottom: 24px;">Patient Directory</h2>
-                        
+                        <h2 class="font-headline-md text-primary" style="margin-bottom:24px;">Patient Directory</h2>
                         <div class="patient-search-row">
                             <div class="search-input-wrapper">
                                 <span class="material-symbols-outlined search-icon">search</span>
                                 <input id="patient-search-bar" placeholder="Search patients by name, ID or primary concern..." type="text"/>
                             </div>
                             <button class="btn-primary" id="btn-add-patient">
-                                <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+                                <span class="material-symbols-outlined" style="font-size:16px;">add</span>
                                 <span>Create Patient Record</span>
                             </button>
                         </div>
-
                         <div class="table-clinical-container">
                             <table class="table-clinical" id="patient-directory-table">
                                 <thead>
@@ -529,39 +1357,33 @@
                                         <th>Age</th>
                                         <th>Gender</th>
                                         <th>Primary Concern</th>
+                                        <th>Next Appointment</th>
                                         <th>Status</th>
-                                        <th style="text-align: right;">Actions</th>
+                                        <th style="text-align:right;">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <!-- Populated by JavaScript -->
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                     </div>
                 </main>
             </div>
 
-            <!-- Global Footer -->
+            <!-- Footer -->
             <footer class="app-footer">
                 <div>
-                    <div class="brand-logo-container" style="margin-bottom: 8px;">
-                        <svg class="brand-logo-svg" style="width: 32px; height: 32px;" viewBox="0 0 200 200">
-                            <circle cx="100" cy="100" r="92" class="logo-outline" />
-                            <g class="logo-graphic" transform="translate(9, 22)">
-                                <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z" />
-                                <g transform="translate(120, 52) scale(0.85) rotate(-12)">
-                                    <path d="M 2,-2 C 6,-12 18,-10 14,-2 C 12,2 4,1 2,2 C 6,6 12,10 9,14 C 6,18 0,10 2,-2 Z" />
-                                    <path d="M -1,-2 C -4,-10 -12,-8 -9,-2 C -8,1 -3,1 -1,2 C -4,5 -8,8 -6,11 C -4,14 0,8 -1,-2 Z" />
-                                    <path d="M 0,-4 C 1,-9 6,-11 9,-10 M 0,-4 C -1,-9 -4,-11 -6,-10" fill="none" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" />
-                                </g>
+                    <div class="brand-logo-container" style="margin-bottom:8px;">
+                        <svg class="brand-logo-svg" style="width:32px;height:32px;" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="92" class="logo-outline"/>
+                            <g class="logo-graphic" transform="translate(9,22)">
+                                <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
                             </g>
                         </svg>
                         <div class="brand-text">
-                            <p class="font-display-lg" style="font-size: 20px; letter-spacing: -0.02em; margin: 0;">Luna Skin Aesthetic</p>
+                            <p class="font-display-lg" style="font-size:20px;letter-spacing:-0.02em;margin:0;">Luna Skin Aesthetic</p>
                         </div>
                     </div>
-                    <p class="font-label-sm text-secondary" style="margin-top: 4px; text-transform: none;">Confidential Medical Record — Authorized Access Only</p>
+                    <p class="font-label-sm text-secondary" style="margin-top:4px;text-transform:none;">Confidential Medical Record — Authorized Access Only</p>
                 </div>
                 <div class="footer-links">
                     <a href="#">Compliance & Legal</a>
@@ -572,258 +1394,238 @@
 
         </div>
     </div>
+</div>
 
-    <!-- MODAL 1: Reschedule / Booking Scheduler -->
-    <div class="modal-overlay" id="reschedule-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="font-headline-md text-primary" style="font-size: 18px;">Schedule Appointment</h3>
-                <span class="material-symbols-outlined modal-close" id="close-modal-btn">close</span>
+<!-- ══════════════════════════════════════════════════════════
+     GLOBAL: Toast / Notifications
+════════════════════════════════════════════════════════════ -->
+<div id="toast-container" style="position:fixed;bottom:32px;right:32px;z-index:9999;display:flex;flex-direction:column;gap:12px;"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODALS (Doctor Portal)
+════════════════════════════════════════════════════════════ -->
+
+<!-- MODAL: Schedule Appointment -->
+<div class="modal-overlay" id="reschedule-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="font-headline-md text-primary" style="font-size:18px;">Schedule Appointment</h3>
+            <span class="material-symbols-outlined modal-close" id="close-modal-btn">close</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="label-clinical">Selected Date</label>
+                <input class="input-clinical font-body-md" id="modal-date-input" type="date"/>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="label-clinical">Selected Date</label>
-                    <input class="input-clinical font-body-md" id="modal-date-input" type="date"/>
+            <div class="form-group">
+                <label class="label-clinical">Select Time</label>
+                <select class="input-clinical font-body-md" id="modal-time-select">
+                    <option value="09:00 AM">09:00 AM</option>
+                    <option value="10:30 AM" selected>10:30 AM</option>
+                    <option value="11:45 AM">11:45 AM</option>
+                    <option value="01:30 PM">01:30 PM</option>
+                    <option value="03:00 PM">03:00 PM</option>
+                    <option value="04:30 PM">04:30 PM</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="label-clinical">Treatment / Purpose</label>
+                <input class="input-clinical font-body-md" id="modal-purpose-input" type="text"/>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="modal-cancel-btn">Cancel</button>
+            <button class="btn-primary" id="modal-save-btn">Confirm Appointment</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Add Procedure -->
+<div class="modal-overlay" id="procedure-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="font-headline-md text-primary" style="font-size:18px;">Add Cosmetic Procedure</h3>
+            <span class="material-symbols-outlined modal-close" id="close-procedure-modal-btn">close</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="label-clinical">Procedure Name</label>
+                <input class="input-clinical font-body-md" id="proc-name-input" type="text" required/>
+            </div>
+            <div class="form-group">
+                <label class="label-clinical">Date</label>
+                <input class="input-clinical font-body-md" id="proc-date-input" type="date" required/>
+            </div>
+            <div class="form-group">
+                <label class="label-clinical">Location</label>
+                <input class="input-clinical font-body-md" id="proc-clinic-input" value="Luna Skin Aesthetic" type="text"/>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="proc-cancel-btn">Cancel</button>
+            <button class="btn-primary" id="proc-save-btn">Add Procedure</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Add Progress Log -->
+<div class="modal-overlay" id="log-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="font-headline-md text-primary" style="font-size:18px;">Add Progress Log Entry</h3>
+            <span class="material-symbols-outlined modal-close" id="close-log-modal-btn">close</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="label-clinical">Date</label>
+                <input class="input-clinical font-body-md" id="log-date-input" type="date" required/>
+            </div>
+            <div class="form-group">
+                <label class="label-clinical">Treatment & Settings</label>
+                <input class="input-clinical font-body-md" id="log-treatment-input" type="text" required/>
+            </div>
+            <div class="form-group">
+                <label class="label-clinical">Reaction</label>
+                <input class="input-clinical font-body-md" id="log-reaction-input" type="text" required/>
+            </div>
+            <div class="form-group">
+                <label class="label-clinical">Aesthetic Notes</label>
+                <input class="input-clinical font-body-md" id="log-notes-input" type="text"/>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="log-cancel-btn">Cancel</button>
+            <button class="btn-primary" id="log-save-btn">Add Log Entry</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Prescribe Skincare -->
+<div class="modal-overlay" id="prescribe-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="font-headline-md text-primary" style="font-size:18px;">Prescribe Skincare</h3>
+            <span class="material-symbols-outlined modal-close" id="close-prescribe-modal-btn">close</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="label-clinical">Product Name</label>
+                <input class="input-clinical font-body-md" id="presc-name-input" type="text" required/>
+            </div>
+            <div class="form-group">
+                <label class="label-clinical">Usage Instructions</label>
+                <input class="input-clinical font-body-md" id="presc-inst-input" type="text"/>
+            </div>
+            <div class="form-group">
+                <label class="label-clinical">Quantity</label>
+                <input class="input-clinical font-body-md" id="presc-qty-input" type="number" value="1" min="1"/>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="presc-cancel-btn">Cancel</button>
+            <button class="btn-primary" id="presc-save-btn">Prescribe Product</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Create New Patient -->
+<div class="modal-overlay" id="new-patient-modal">
+    <div class="modal-content" style="max-width:600px;">
+        <div class="modal-header">
+            <h3 class="font-headline-md text-primary" style="font-size:18px;">Create New Patient Record</h3>
+            <span class="material-symbols-outlined modal-close" id="close-new-patient-modal-btn">close</span>
+        </div>
+        <div class="modal-body">
+            <div class="grid-2" style="gap:16px;">
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label class="label-clinical">Full Name</label>
+                    <input class="input-clinical font-body-md" id="np-name" type="text" required/>
                 </div>
-                <div class="form-group">
-                    <label class="label-clinical">Select Time</label>
-                    <select class="input-clinical font-body-md" id="modal-time-select">
-                        <option value="09:00 AM">09:00 AM</option>
-                        <option value="10:30 AM" selected>10:30 AM</option>
-                        <option value="11:45 AM">11:45 AM</option>
-                        <option value="01:30 PM">01:30 PM</option>
-                        <option value="03:00 PM">03:00 PM</option>
-                        <option value="04:30 PM">04:30 PM</option>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label class="label-clinical">Age</label>
+                    <input class="input-clinical font-body-md" id="np-age" type="number" min="0"/>
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label class="label-clinical">Gender</label>
+                    <select class="input-clinical font-body-md" id="np-gender">
+                        <option>Female</option>
+                        <option>Male</option>
+                        <option>Other</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label class="label-clinical">Treatment / Purpose</label>
-                    <input class="input-clinical font-body-md" id="modal-purpose-input" type="text" value="Chemical Peel Follow-up"/>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label class="label-clinical">Contact Number</label>
+                    <input class="input-clinical font-body-md" id="np-contact" type="tel"/>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" id="modal-cancel-btn">Cancel</button>
-                <button class="btn-primary" id="modal-save-btn">Confirm Appointment</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 2: Add Procedure Entry -->
-    <div class="modal-overlay" id="procedure-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="font-headline-md text-primary" style="font-size: 18px;">Add Clinical Procedure</h3>
-                <span class="material-symbols-outlined modal-close" id="close-procedure-modal-btn">close</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="label-clinical">Procedure Name</label>
-                    <input class="input-clinical font-body-md" id="proc-name-input" placeholder="e.g. Microneedling" type="text" required/>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label class="label-clinical">Skin Type</label>
+                    <select class="input-clinical font-body-md" id="np-skintype">
+                        <option>Combination</option>
+                        <option>Oily</option>
+                        <option>Dry</option>
+                        <option>Sensitive</option>
+                        <option>Normal</option>
+                    </select>
                 </div>
-                <div class="form-group">
-                    <label class="label-clinical">Date</label>
-                    <input class="input-clinical font-body-md" id="proc-date-input" type="date" required/>
-                </div>
-                <div class="form-group">
-                    <label class="label-clinical">Clinic</label>
-                    <input class="input-clinical font-body-md" id="proc-clinic-input" value="Luna Skin Aesthetic" type="text"/>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" id="proc-cancel-btn">Cancel</button>
-                <button class="btn-primary" id="proc-save-btn">Add Procedure</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 3: Add Progress Log Entry -->
-    <div class="modal-overlay" id="log-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="font-headline-md text-primary" style="font-size: 18px;">Add Progress Log Entry</h3>
-                <span class="material-symbols-outlined modal-close" id="close-log-modal-btn">close</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="label-clinical">Date</label>
-                    <input class="input-clinical font-body-md" id="log-date-input" type="date" required/>
-                </div>
-                <div class="form-group">
-                    <label class="label-clinical">Treatment & Settings</label>
-                    <input class="input-clinical font-body-md" id="log-treatment-input" placeholder="e.g. IPL Laser (14J/cm2)" type="text" required/>
-                </div>
-                <div class="form-group">
-                    <label class="label-clinical">Reaction</label>
-                    <input class="input-clinical font-body-md" id="log-reaction-input" placeholder="e.g. Excellent / Minimal Erythema" type="text" required/>
-                </div>
-                <div class="form-group">
-                    <label class="label-clinical">Clinical Notes</label>
-                    <input class="input-clinical font-body-md" id="log-notes-input" placeholder="Practitioner observations..." type="text"/>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" id="log-cancel-btn">Cancel</button>
-                <button class="btn-primary" id="log-save-btn">Add Log Entry</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 4: Prescribe Skincare -->
-    <div class="modal-overlay" id="prescribe-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="font-headline-md text-primary" style="font-size: 18px;">Prescribe Skincare</h3>
-                <span class="material-symbols-outlined modal-close" id="close-prescribe-modal-btn">close</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="label-clinical">Product Name</label>
-                    <input class="input-clinical font-body-md" id="presc-name-input" placeholder="e.g. Ceramide Moisturizer" type="text" required/>
-                </div>
-                <div class="form-group">
-                    <label class="label-clinical">Usage Instructions</label>
-                    <input class="input-clinical font-body-md" id="presc-inst-input" placeholder="e.g. Apply AM after serum" type="text" required/>
-                </div>
-                <div class="form-group">
-                    <label class="label-clinical">Quantity</label>
-                    <input class="input-clinical font-body-md" id="presc-qty-input" type="number" min="1" value="1" required/>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" id="presc-cancel-btn">Cancel</button>
-                <button class="btn-primary" id="presc-save-btn">Prescribe</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 5: Create Patient Record -->
-    <div class="modal-overlay" id="new-patient-modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <h3 class="font-headline-md text-primary" style="font-size: 18px;">Create Patient Record</h3>
-                <span class="material-symbols-outlined modal-close" id="close-new-patient-modal-btn">close</span>
-            </div>
-            <div class="modal-body">
-                <div class="grid-2">
-                    <div class="form-group">
-                        <label class="label-clinical">Full Name</label>
-                        <input class="input-clinical font-body-md" id="new-p-name" placeholder="John Doe" type="text" required/>
-                    </div>
-                    <div class="form-group">
-                        <label class="label-clinical">Age</label>
-                        <input class="input-clinical font-body-md" id="new-p-age" placeholder="30" type="number" required/>
-                    </div>
-                    <div class="form-group">
-                        <label class="label-clinical">Gender</label>
-                        <select class="input-clinical font-body-md" id="new-p-gender">
-                            <option value="Female">Female</option>
-                            <option value="Male">Male</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="label-clinical">Contact Number</label>
-                        <input class="input-clinical font-body-md" id="new-p-contact" placeholder="+971 50 000 0000" type="text" required/>
-                    </div>
-                </div>
-                <div class="form-group" style="margin-top: 12px;">
+                <div class="form-group" style="margin-bottom:16px;">
                     <label class="label-clinical">Primary Concern</label>
-                    <input class="input-clinical font-body-md" id="new-p-concern" placeholder="e.g. Acne, Hyperpigmentation" type="text" required/>
+                    <input class="input-clinical font-body-md" id="np-concern" type="text"/>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" id="new-p-cancel-btn">Cancel</button>
-                <button class="btn-primary" id="new-p-save-btn">Create Record</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 6: Settings Modal -->
-    <div class="modal-overlay" id="settings-modal">
-        <div class="modal-content" style="max-width: 450px;">
-            <div class="modal-header">
-                <h3 class="font-headline-md text-primary" style="font-size: 18px;">Portal Settings</h3>
-                <span class="material-symbols-outlined modal-close" id="close-settings-modal-btn">close</span>
-            </div>
-            <div class="modal-body" style="display: flex; flex-direction: column; gap: 20px;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="label-clinical">Clinic Name</label>
-                    <input class="input-clinical font-body-md" id="setting-clinic-name" type="text" value="Luna Skin Aesthetic"/>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="label-clinical">Lead Dermatologist</label>
-                    <input class="input-clinical font-body-md" id="setting-dermatologist" type="text" value="Dr. Elena Vogt"/>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="label-clinical">License/Signature ID</label>
-                    <input class="input-clinical font-body-md" id="setting-license-id" type="text" value="#882-LUNA-SAFE-921"/>
-                </div>
-                <div style="border-top: 1px solid var(--color-outline-variant); padding-top: 16px; margin-top: 8px;">
-                    <h4 class="font-label-sm text-primary" style="margin-bottom: 8px;">Theme Preference</h4>
-                    <p class="font-body-md text-secondary" style="font-size: 13px; margin-bottom: 16px; text-transform: none;">Use the moon/sun icon in the top bar to toggle Light/Dark mode.</p>
-                    <h4 class="font-label-sm text-primary" style="margin-bottom: 12px;">System Actions</h4>
-                    <button class="btn-danger" id="setting-reset-db-btn" style="width: 100%; justify-content: center;">
-                        <span class="material-symbols-outlined" style="font-size: 16px;">restart_alt</span>
-                        <span>Reset Database to Default</span>
-                    </button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" id="setting-cancel-btn">Cancel</button>
-                <button class="btn-primary" id="setting-save-btn">Save Preferences</button>
+            <div class="form-group">
+                <label class="label-clinical">Known Allergies</label>
+                <input class="input-clinical font-body-md" id="np-allergies" type="text"/>
             </div>
         </div>
-    </div>
-
-    <!-- MODAL 7: Notifications Panel -->
-    <div class="modal-overlay" id="notifications-modal">
-        <div class="modal-content" style="max-width: 440px;">
-            <div class="modal-header">
-                <h3 class="font-headline-md text-primary" style="font-size: 18px;">Notifications</h3>
-                <span class="material-symbols-outlined modal-close" id="close-notifications-modal-btn">close</span>
-            </div>
-            <div class="modal-body" style="padding: 0;">
-                <div class="notif-item">
-                    <span class="material-symbols-outlined notif-icon" style="color: var(--color-primary);">event_upcoming</span>
-                    <div>
-                        <p class="font-label-sm" style="margin-bottom: 4px;">Upcoming Appointment</p>
-                        <p class="font-body-md text-secondary" style="font-size: 13px; text-transform: none;">Farook Al-Aziz — Chemical Peel Follow-up on June 12, 10:30 AM</p>
-                    </div>
-                </div>
-                <div class="notif-item">
-                    <span class="material-symbols-outlined notif-icon" style="color: var(--color-primary);">event_upcoming</span>
-                    <div>
-                        <p class="font-label-sm" style="margin-bottom: 4px;">Upcoming Appointment</p>
-                        <p class="font-body-md text-secondary" style="font-size: 13px; text-transform: none;">Elena Rostova — LED Light Session on June 19, 3:00 PM</p>
-                    </div>
-                </div>
-                <div class="notif-item">
-                    <span class="material-symbols-outlined notif-icon" style="color: var(--color-secondary);">assignment_late</span>
-                    <div>
-                        <p class="font-label-sm" style="margin-bottom: 4px;">Protocol Pending</p>
-                        <p class="font-body-md text-secondary" style="font-size: 13px; text-transform: none;">Elena Rostova &amp; Marcus Vance — case sheets awaiting digital signature verification.</p>
-                    </div>
-                </div>
-                <div class="notif-item">
-                    <span class="material-symbols-outlined notif-icon" style="color: var(--color-secondary);">info</span>
-                    <div>
-                        <p class="font-label-sm" style="margin-bottom: 4px;">Portal Update</p>
-                        <p class="font-body-md text-secondary" style="font-size: 13px; text-transform: none;">Luminous Clinical Portal v2.1 — All features are operational. PDF export and protocol editing are now available.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" id="notif-dismiss-btn">Dismiss All</button>
-                <button class="btn-primary" onclick="closeModal('notifications-modal')">Close</button>
-            </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="new-p-cancel-btn">Cancel</button>
+            <button class="btn-primary" id="new-p-save-btn">Create Patient Record</button>
         </div>
     </div>
+</div>
 
-    <!-- Toast Notifications Area -->
-    <div class="toast-container" id="toast-container"></div>
+<!-- MODAL: Settings -->
+<div class="modal-overlay" id="settings-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="font-headline-md text-primary" style="font-size:18px;">Portal Settings</h3>
+            <span class="material-symbols-outlined modal-close" id="close-settings-modal-btn">close</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="label-clinical">Center Name</label>
+                <input class="input-clinical font-body-md" id="setting-clinic-name" type="text"/>
+            </div>
+            <div class="form-group">
+                <label class="label-clinical">Lead Dermatologist</label>
+                <input class="input-clinical font-body-md" id="setting-dermatologist" type="text"/>
+            </div>
+            <div class="form-group">
+                <label class="label-clinical">License ID</label>
+                <input class="input-clinical font-body-md" id="setting-license" type="text"/>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="setting-cancel-btn">Cancel</button>
+            <button class="btn-primary" id="setting-save-btn">Save Settings</button>
+        </div>
+    </div>
+<!-- MODAL: Notifications -->
+<div class="modal-overlay" id="notifications-modal">
+    <div class="modal-content" style="max-width:550px;">
+        <div class="modal-header">
+            <h3 class="font-headline-md text-primary" style="font-size:18px;">Doctor Notifications</h3>
+            <span class="material-symbols-outlined modal-close" id="close-notifications-btn">close</span>
+        </div>
+        <div class="modal-body" id="notifications-modal-body" style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px;">
+            <p class="text-secondary" style="text-align:center;font-style:italic;padding:20px 0;">No new notifications</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="notif-clear-btn">Mark All Read</button>
+            <button class="btn-primary" id="notif-close-btn">Close</button>
+        </div>
+</div>
 
-    <!-- Main Logic Script -->
-    <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
-
