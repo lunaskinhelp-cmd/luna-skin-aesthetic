@@ -1766,8 +1766,42 @@ document.querySelectorAll('.landing-nav-links a[href^="#"]').forEach(link => {
     });
 });
 
+// ─── MOBILE RESPONSIVE SIDEBAR NAVIGATION ───────────────────
+function setupMobileSidebar(menuBtnId, closeBtnId, sidebarId) {
+    const menuBtn = document.getElementById(menuBtnId);
+    const closeBtn = document.getElementById(closeBtnId);
+    const sidebar = document.getElementById(sidebarId);
+    const overlay = document.getElementById('mobile-sidebar-overlay');
+
+    const openSidebar = () => {
+        if (sidebar) sidebar.classList.add('mobile-active');
+        if (overlay) overlay.classList.add('active');
+    };
+
+    const closeSidebar = () => {
+        if (sidebar) sidebar.classList.remove('mobile-active');
+        if (overlay) overlay.classList.remove('active');
+    };
+
+    menuBtn?.addEventListener('click', openSidebar);
+    closeBtn?.addEventListener('click', closeSidebar);
+    overlay?.addEventListener('click', closeSidebar);
+
+    // Also close the sidebar when clicking any navigation links inside
+    sidebar?.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', closeSidebar);
+    });
+    sidebar?.querySelectorAll('.tab-nav span').forEach(btn => {
+        btn.addEventListener('click', closeSidebar);
+    });
+}
+
 // ─── INITIALIZE ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initHeroParticles();
     restoreSession();
+    
+    // Set up both portal drawer navigations
+    setupMobileSidebar('patient-mobile-menu-btn', 'patient-sidebar-close-btn', 'patient-sidebar');
+    setupMobileSidebar('doctor-mobile-menu-btn', 'doctor-sidebar-close-btn', 'sidebar-nav');
 });

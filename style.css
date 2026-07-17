@@ -2823,13 +2823,104 @@ footer.app-footer .footer-links a:hover {
     .landing-nav { padding: 0 24px; }
     .landing-nav-actions .btn-nav-ghost { display: none; }
     .auth-form-panel { padding: 40px 24px; }
-    .portal-sidebar { display: none; }
-    .portal-main { margin-left: 0; }
-    .portal-content { padding: 24px; }
-    .overview-grid { grid-template-columns: 1fr 1fr; }
-    .pt-skincare-grid { grid-template-columns: 1fr; }
-    .hero-stats { flex-wrap: wrap; gap: 20px; }
+    
+    /* Mobile Drawer navigation for portals */
+    .portal-sidebar, .sidebar-nav {
+        display: none !important;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 270px;
+        height: 100vh;
+        z-index: 200;
+        box-shadow: 0 0 24px rgba(0, 0, 0, 0.15);
+        background-color: var(--color-surface);
+        animation: slideInSidebar 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    @keyframes slideInSidebar {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(0); }
+    }
+    
+    .portal-sidebar.mobile-active, .sidebar-nav.mobile-active {
+        display: flex !important;
+    }
+    
+    .mobile-sidebar-close-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+        color: var(--color-on-surface);
+    }
+    
+    .portal-main, .main-content {
+        margin-left: 0 !important;
+    }
+    
+    .portal-content {
+        padding: 20px;
+    }
+    
+    .overview-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+    
+    .pt-skincare-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .hero-stats {
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    /* Mobile Headers styling */
+    .portal-header, header.app-header {
+        padding: 16px 20px !important;
+    }
+    
+    .mobile-menu-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--color-on-surface);
+        border: 1px solid var(--color-outline-variant);
+        transition: background-color var(--transition-speed);
+    }
+    
+    .mobile-menu-btn:hover {
+        background-color: var(--color-surface-container-low);
+    }
 }
+
+/* Mobile Sidebar Backdrop overlay */
+.mobile-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 190;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.mobile-sidebar-overlay.active {
+    display: block;
+}
+
+/* Hide mobile-only buttons on desktop */
+.mobile-menu-btn, .mobile-sidebar-close-btn {
+    display: none;
+}
+
 
 /* ════════════════════════════════════════════════════════════
    PASSWORD VISIBILITY TOGGLE

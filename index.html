@@ -13,6 +13,9 @@
 </head>
 <body>
 
+<!-- Mobile Sidebar Overlay Backdrop -->
+<div class="mobile-sidebar-overlay" id="mobile-sidebar-overlay"></div>
+
 <!-- ══════════════════════════════════════════════════════════
      PAGE: LANDING (Public Homepage)
 ════════════════════════════════════════════════════════════ -->
@@ -606,20 +609,25 @@
 
         <!-- Patient Sidebar -->
         <nav class="portal-sidebar" id="patient-sidebar">
-            <div class="portal-sidebar-header">
-                <div class="brand-logo-container" style="gap:10px;">
-                    <svg class="brand-logo-svg" style="width:32px;height:32px;" viewBox="0 0 200 200">
-                        <circle cx="100" cy="100" r="92" class="logo-outline"/>
-                        <g class="logo-graphic" transform="translate(9,22)">
-                            <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
-                        </g>
-                    </svg>
-                    <div class="brand-text">
-                        <span style="font-size:12px;font-family:'Playfair Display',serif;letter-spacing:0.08em;">LUNA</span>
-                        <span style="font-size:7px;margin-top:2px;">SKIN AESTHETICS</span>
+            <div class="portal-sidebar-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                    <div class="brand-logo-container" style="gap:10px;">
+                        <svg class="brand-logo-svg" style="width:32px;height:32px;" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="92" class="logo-outline"/>
+                            <g class="logo-graphic" transform="translate(9,22)">
+                                <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
+                            </g>
+                        </svg>
+                        <div class="brand-text">
+                            <span style="font-size:12px;font-family:'Playfair Display',serif;letter-spacing:0.08em;">LUNA</span>
+                            <span style="font-size:7px;margin-top:2px;">SKIN AESTHETICS</span>
+                        </div>
                     </div>
+                    <p class="font-label-sm text-secondary" style="margin-top:8px;font-size:9px;">Patient Portal</p>
                 </div>
-                <p class="font-label-sm text-secondary" style="margin-top:8px;font-size:9px;">Patient Portal</p>
+                <button class="mobile-sidebar-close-btn" id="patient-sidebar-close-btn" title="Close Menu" style="background:none;border:none;cursor:pointer;">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
             </div>
 
             <div class="portal-patient-profile">
@@ -667,9 +675,14 @@
         <div class="portal-main">
             <!-- Patient Top Header -->
             <header class="portal-header">
-                <div>
-                    <h2 class="font-headline-md text-primary" id="patient-section-title">Patient Overview</h2>
-                    <p class="font-label-sm text-secondary" id="patient-section-date" style="margin-top:4px;text-transform:none;font-size:11px;"></p>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="mobile-menu-btn" id="patient-mobile-menu-btn" title="Open Menu">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                    <div>
+                        <h2 class="font-headline-md text-primary" id="patient-section-title">Patient Overview</h2>
+                        <p class="font-label-sm text-secondary" id="patient-section-date" style="margin-top:4px;text-transform:none;font-size:11px;"></p>
+                    </div>
                 </div>
                 <div style="display:flex;align-items:center;gap:16px;">
                     <span class="header-icon material-symbols-outlined" id="theme-toggle-patient" title="Toggle Theme">dark_mode</span>
@@ -898,21 +911,22 @@
     <!-- Main Sidebar Navigation -->
     <nav class="sidebar-nav" id="sidebar-nav">
         <div style="padding:0 24px;margin-bottom:32px;display:flex;flex-direction:column;gap:16px;">
-            <div class="brand-logo-container" style="gap:10px;">
-                <svg class="brand-logo-svg" style="width:32px;height:32px;" viewBox="0 0 200 200">
-                    <circle cx="100" cy="100" r="92" class="logo-outline"/>
-                    <g class="logo-graphic" transform="translate(9,22)">
-                        <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
-                        <g transform="translate(120,52) scale(0.85) rotate(-12)">
-                            <path d="M 2,-2 C 6,-12 18,-10 14,-2 C 12,2 4,1 2,2 C 6,6 12,10 9,14 C 6,18 0,10 2,-2 Z"/>
-                            <path d="M -1,-2 C -4,-10 -12,-8 -9,-2 C -8,1 -3,1 -1,2 C -4,5 -8,8 -6,11 C -4,14 0,8 -1,-2 Z"/>
+            <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                <div class="brand-logo-container" style="gap:10px;">
+                    <svg class="brand-logo-svg" style="width:32px;height:32px;" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="92" class="logo-outline"/>
+                        <g class="logo-graphic" transform="translate(9,22)">
+                            <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
                         </g>
-                    </g>
-                </svg>
-                <div class="brand-text">
-                    <span class="brand-name" style="font-size:14px;font-family:'Playfair Display',serif;letter-spacing:0.08em;text-transform:uppercase;">LUNA</span>
-                    <span class="brand-subname" style="font-size:7px;margin-top:2px;">SKIN AESTHETICS</span>
+                    </svg>
+                    <div class="brand-text">
+                        <span class="brand-name" style="font-size:14px;font-family:'Playfair Display',serif;letter-spacing:0.08em;text-transform:uppercase;">LUNA</span>
+                        <span class="brand-subname" style="font-size:7px;margin-top:2px;">SKIN AESTHETICS</span>
+                    </div>
                 </div>
+                <button class="mobile-sidebar-close-btn" id="doctor-sidebar-close-btn" title="Close Menu" style="background:none;border:none;cursor:pointer;color:var(--color-secondary);">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
             </div>
             <div style="border-top:1px solid var(--color-outline-variant);padding-top:12px;">
                 <h2 class="font-headline-md text-primary" style="font-size:16px;letter-spacing:0.05em;text-transform:uppercase;font-weight:600;">Aesthetic Portal</h2>
@@ -970,6 +984,9 @@
             <!-- Global Top Navigation Header -->
             <header class="app-header">
                 <div class="logo-area">
+                    <button class="mobile-menu-btn" id="doctor-mobile-menu-btn" title="Open Menu" style="margin-right:12px;">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
                     <div class="brand-logo-container">
                         <svg class="brand-logo-svg" viewBox="0 0 200 200">
                             <circle cx="100" cy="100" r="92" class="logo-outline"/>
