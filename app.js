@@ -35,8 +35,8 @@ function setAuthRole(role) {
     const tabsWrap = document.getElementById('auth-tabs');
 
     if (role === 'doctor') {
-        title.textContent = 'Doctor Sign In';
-        subtitle.textContent = 'Access the cosmetic management portal';
+        title.textContent = 'Specialist Sign In';
+        subtitle.textContent = 'Access the clinical cosmetology portal';
         doctorHint.style.display = 'flex';
         if (patientHint) patientHint.style.display = 'none';
         tabsWrap.style.display = 'none'; // Doctors can't register here

@@ -160,20 +160,20 @@ const INITIAL_PATIENTS = [
 ];
 
 const INITIAL_SETTINGS = {
-    clinicName: "Luna Skin Aesthetic",
-    dermatologist: "Dr. Elena Vogt",
+    clinicName: "Luna Skin Aesthetics",
+    dermatologist: "Lead Cosmetologist",
     licenseId: "#882-LUNA-SAFE-921"
 };
 
 const INITIAL_USERS = [
     {
         id: "doctor-001",
-        name: "Dr. Elena Vogt",
+        name: "Cosmetology Specialist",
         email: "dr.vogt@luna.com",
         password: "luna2024",
         role: "doctor",
         licenseId: "#882-LUNA-SAFE-921",
-        specialization: "Lead Aesthetic Practitioner",
+        specialization: "Lead Clinical Cosmetologist",
         avatar: "practitioner.jpg",
         phone: "+971 50 888 2921"
     }
