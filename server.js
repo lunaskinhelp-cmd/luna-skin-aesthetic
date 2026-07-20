@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,13 +11,38 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Paths to JSON storage
-const DATA_DIR = path.join(__dirname, 'data');
-const PATIENTS_FILE = path.join(DATA_DIR, 'patients.json');
-const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
-const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notifications.json');
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+// Dynamic writable directory setup (safe for Vercel / serverless read-only filesystems)
+function getWritableDir(dirName) {
+    const primaryPath = path.join(__dirname, dirName);
+    try {
+        if (!fs.existsSync(primaryPath)) {
+            fs.mkdirSync(primaryPath, { recursive: true });
+        }
+        // Test write permissions
+        const testFile = path.join(primaryPath, `.test_write_${Date.now()}`);
+        fs.writeFileSync(testFile, 'test');
+        fs.unlinkSync(testFile);
+        return primaryPath;
+    } catch (e) {
+        const fallbackPath = path.join(os.tmpdir(), 'luna-skin-app', dirName);
+        try {
+            if (!fs.existsSync(fallbackPath)) {
+                fs.mkdirSync(fallbackPath, { recursive: true });
+            }
+        } catch (err) {
+            console.error(`Failed to create fallback directory ${fallbackPath}:`, err);
+        }
+        return fallbackPath;
+    }
+}
+
+const DATA_DIR = getWritableDir('data');
+const UPLOADS_DIR = getWritableDir('uploads');
+
+const PATIENTS_FILE = 'patients.json';
+const SETTINGS_FILE = 'settings.json';
+const USERS_FILE = 'users.json';
+const NOTIFICATIONS_FILE = 'notifications.json';
 
 // ─── Initial Seed Data ──────────────────────────────────────────────────────
 
@@ -153,26 +179,50 @@ const INITIAL_USERS = [
     }
 ];
 
-// ─── Filesystem Setup ────────────────────────────────────────────────────────
+// ─── Filesystem Setup & Data Helpers ─────────────────────────────────────────
 
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
+const memoryCache = {};
 
-function readDataFile(filepath, fallback) {
-    if (!fs.existsSync(filepath)) {
-        fs.writeFileSync(filepath, JSON.stringify(fallback, null, 2));
-        return fallback;
+function readDataFile(filename, fallback) {
+    // 1. Check dynamic writable DATA_DIR
+    const writablePath = path.join(DATA_DIR, filename);
+    if (fs.existsSync(writablePath)) {
+        try {
+            return JSON.parse(fs.readFileSync(writablePath, 'utf8'));
+        } catch (err) {
+            console.error(`Error reading ${writablePath}:`, err);
+        }
     }
-    try {
-        return JSON.parse(fs.readFileSync(filepath, 'utf8'));
-    } catch (err) {
-        console.error(`Error reading ${filepath}:`, err);
-        return fallback;
+
+    // 2. Check bundled data dir (__dirname/data/filename)
+    const bundledPath = path.join(__dirname, 'data', filename);
+    if (fs.existsSync(bundledPath)) {
+        try {
+            return JSON.parse(fs.readFileSync(bundledPath, 'utf8'));
+        } catch (err) {
+            console.error(`Error reading bundled file ${bundledPath}:`, err);
+        }
     }
+
+    // 3. Check memory cache
+    if (memoryCache[filename]) {
+        return memoryCache[filename];
+    }
+
+    // 4. Fallback: cache in memory and attempt to save to writable path
+    memoryCache[filename] = fallback;
+    writeDataFile(filename, fallback);
+    return fallback;
 }
 
-function writeDataFile(filepath, data) {
-    fs.writeFileSync(filepath, JSON.stringify(data, null, 2));
+function writeDataFile(filename, data) {
+    memoryCache[filename] = data;
+    const writablePath = path.join(DATA_DIR, filename);
+    try {
+        fs.writeFileSync(writablePath, JSON.stringify(data, null, 2));
+    } catch (err) {
+        console.warn(`Warning: Could not write to ${writablePath} (read-only system): ${err.message}`);
+    }
 }
 
 function addNotification(message, type = 'info') {
@@ -535,14 +585,21 @@ app.post('/api/reset', (req, res) => {
 // ─── STATIC ASSETS ───────────────────────────────────────────────────────────
 
 app.use('/uploads', express.static(UPLOADS_DIR));
+if (UPLOADS_DIR !== path.join(__dirname, 'uploads')) {
+    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+}
 app.use(express.static(__dirname));
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`\n🌙 Luna Skin Aesthetic — Cosmetic Portal`);
-    console.log(`   Server running at: http://localhost:${PORT}`);
-    console.log(`   Doctor Login: dr.vogt@luna.com / luna2024\n`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`\n🌙 Luna Skin Aesthetic — Cosmetic Portal`);
+        console.log(`   Server running at: http://localhost:${PORT}`);
+        console.log(`   Doctor Login: dr.vogt@luna.com / luna2024\n`);
+    });
+}
+
+module.exports = app;
