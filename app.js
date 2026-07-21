@@ -1271,16 +1271,15 @@ window.addEventListener('scroll', () => {
 });
 
 // ─── THEME TOGGLE ─────────────────────────────────────────────
-// Always default to light theme on page load
-let systemTheme = 'light';
-localStorage.setItem('clinical-theme', 'light');
+// Load saved theme or default to light
+let systemTheme = localStorage.getItem('clinical-theme') || 'light';
 document.documentElement.setAttribute('data-theme', systemTheme);
 
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('clinical-theme', theme);
     const icon = theme === 'dark' ? 'light_mode' : 'dark_mode';
-    document.querySelectorAll('#theme-toggle, #theme-toggle-patient').forEach(el => {
+    document.querySelectorAll('#theme-toggle, #theme-toggle-patient, #theme-toggle-landing').forEach(el => {
         if (el) el.textContent = icon;
     });
 }
@@ -1296,6 +1295,12 @@ document.getElementById('theme-toggle')?.addEventListener('click', () => {
 document.getElementById('theme-toggle-patient')?.addEventListener('click', () => {
     const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
     applyTheme(next);
+});
+
+document.getElementById('theme-toggle-landing')?.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    showToast(`Switched page to ${next === 'dark' ? 'Dark' : 'Light'} mode.`);
 });
 
 // ─── MODAL SYSTEM ─────────────────────────────────────────────
@@ -1796,10 +1801,215 @@ function setupMobileSidebar(menuBtnId, closeBtnId, sidebarId) {
     });
 }
 
+// ─── DYNAMIC HERO SLOTS ──────────────────────────────────────────
+function updateDynamicNextSlot() {
+    const el = document.getElementById('dynamic-next-slot');
+    if (!el) return;
+
+    const now = new Date();
+    let slotTime = new Date();
+    
+    const currentHour = now.getHours();
+    
+    if (currentHour < 15) { // Before 3 PM: show today's afternoon
+        slotTime.setHours(16, 0, 0, 0); // 4:00 PM today
+        el.textContent = `Today at ${formatSlotTime(slotTime)}`;
+    } else { // After 3 PM: show tomorrow morning
+        slotTime.setDate(now.getDate() + 1);
+        slotTime.setHours(9, 30, 0, 0); // 9:30 AM tomorrow
+        el.textContent = `Tomorrow at ${formatSlotTime(slotTime)}`;
+    }
+}
+
+function formatSlotTime(date) {
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; 
+    minutes = minutes < 10 ? '0'+minutes : minutes;
+    return `${hours}:${minutes} ${ampm}`;
+}
+
+// ─── SKIN & HAIR ASSESSOR MODULE ────────────────────────────────
+let assessorAnswers = {
+    category: null,
+    subCategory: null,
+    recommendationName: null
+};
+
+const assessorData = {
+    face: {
+        title: "2. Choose your specific skin concern:",
+        options: [
+            { key: "dullness", label: "Dullness & Dryness", desc: "Dehydrated skin, rough texture, or lack of radiance" },
+            { key: "pigment", label: "Hyperpigmentation & Melasma", desc: "Sun damage, melasma, dark spots, or uneven tone" },
+            { key: "scars", label: "Acne Scars & Texture", desc: "Indentations, large pores, or post-acne marks" },
+            { key: "bright", label: "Age Spots & Fine Lines", desc: "Wrinkles, sagging, or age spots" }
+        ],
+        recommendations: {
+            dullness: {
+                name: "HydraFacial",
+                desc: "A multi-step vortex infusion that deeply cleanses, extracts impurities, and hydrates with active peptides and antioxidants. Ideal for dull, dry, and tired-looking skin."
+            },
+            pigment: {
+                name: "Chemical Peel",
+                desc: "An advanced formulation of glycolic, lactic, and salicylic acids to exfoliate damaged skin layers, promote rapid cellular turnover, and dramatically fade hyperpigmentation."
+            },
+            scars: {
+                name: "Microneedling",
+                desc: "Precision collagen induction therapy that stimulates natural skin healing, reducing the depth of acne scars, refining pores, and tightening texture."
+            },
+            bright: {
+                name: "Skin Brightening Treatments",
+                desc: "Targeted cosmetic brightening infusions combined with soothing serums to diminish melasma, age spots, and balance skin tone."
+            }
+        }
+    },
+    hair: {
+        title: "2. Select your hair or scalp concern:",
+        options: [
+            { key: "thinning", label: "Scalp Thinning & Hair Fall", desc: "Decreasing hair density or active hair shedding" },
+            { key: "flakes", label: "Flaky Scalp & Dandruff", desc: "Persistent scaling, itching, or excess sebum" },
+            { key: "length", label: "Volume & Length Enhancement", desc: "Desire for thicker or longer locks instantly" }
+        ],
+        recommendations: {
+            thinning: {
+                name: "Hair Regrowth Treatment",
+                desc: "Scalp micro-circulation stimulation and active nutrient cocktails infused directly to revitalize dormant hair follicles and boost density."
+            },
+            flakes: {
+                name: "Dandruff Treatment",
+                desc: "Scalp exfoliation and anti-fungal botanical treatments to regulate sebum, clarify the scalp, and prevent future flaking."
+            },
+            length: {
+                name: "Hair Extension",
+                desc: "Premium, seamless application of high-quality human hair extensions customized to blend naturally with your hair type and style."
+            }
+        }
+    },
+    laser: {
+        title: "2. Choose your laser treatment goal:",
+        options: [
+            { key: "hair_rem", label: "Unwanted Facial or Body Hair", desc: "Seeking permanent, smooth reduction of body or facial hair" },
+            { key: "tattoo", label: "Tattoo Fading or Removal", desc: "Desire to fade or completely clear an existing tattoo" }
+        ],
+        recommendations: {
+            hair_rem: {
+                name: "Hair Removal Laser",
+                desc: "Dual-wavelength medical grade laser sessions tailored safely to all skin types for highly effective hair follicle reduction with cooling comfort."
+            },
+            tattoo: {
+                name: "Tattoo Removal Laser",
+                desc: "High-precision Q-Switched Nd:YAG laser that shatters tattoo inks into micro-particles for safe, progressive clearing."
+            }
+        }
+    },
+    makeup: {
+        title: "2. Choose your semi-permanent makeup goals:",
+        options: [
+            { key: "spmu", label: "Eyebrow Shaping & Lip Blush", desc: "Desire for defined semi-permanent brows or soft tinted lips" }
+        ],
+        recommendations: {
+            spmu: {
+                name: "SPMU for Eyebrows & Lips",
+                desc: "Semi-permanent artistic lip blush contouring or eyebrow microblading/shading to maintain pristine makeup looks 24/7."
+            }
+        }
+    }
+};
+
+function selectAssessorOption(step, value, label) {
+    if (step === 1) {
+        assessorAnswers.category = value;
+        
+        // Populate Step 2 options
+        const step2Data = assessorData[value];
+        document.getElementById('assessor-q2').textContent = step2Data.title;
+        
+        const grid = document.getElementById('assessor-options-q2');
+        grid.innerHTML = '';
+        step2Data.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'assessor-opt-btn';
+            btn.onclick = () => selectAssessorOption(2, opt.key, opt.label);
+            btn.innerHTML = `
+                <span class="material-symbols-outlined" style="font-size:32px;color:var(--color-primary);">done</span>
+                <div>
+                    <p style="font-weight:700;font-size:15px;">${opt.label}</p>
+                    <p style="font-size:12px;opacity:0.7;margin-top:2px;">${opt.desc}</p>
+                </div>
+            `;
+            grid.appendChild(btn);
+        });
+
+        // Go to Step 2
+        document.getElementById('assessor-step-1').style.display = 'none';
+        document.getElementById('assessor-step-2').style.display = 'block';
+        document.getElementById('assessor-progress').style.width = '66%';
+    } else if (step === 2) {
+        assessorAnswers.subCategory = value;
+        
+        // Show recommendation
+        const categoryData = assessorData[assessorAnswers.category];
+        const rec = categoryData.recommendations[value];
+        
+        const box = document.getElementById('assessor-recommendation-box');
+        box.innerHTML = `
+            <h4>${rec.name}</h4>
+            <p>${rec.desc}</p>
+        `;
+        
+        // Store selected recommendation in a temporary global variable to prefill booking
+        assessorAnswers.recommendationName = rec.name;
+
+        // Go to Step 3
+        document.getElementById('assessor-step-2').style.display = 'none';
+        document.getElementById('assessor-step-3').style.display = 'block';
+        document.getElementById('assessor-progress').style.width = '100%';
+    }
+}
+
+function prevAssessorStep() {
+    // Back to Step 1
+    document.getElementById('assessor-step-2').style.display = 'none';
+    document.getElementById('assessor-step-1').style.display = 'block';
+    document.getElementById('assessor-progress').style.width = '33%';
+}
+
+function resetAssessor() {
+    assessorAnswers = { category: null, subCategory: null, recommendationName: null };
+    document.getElementById('assessor-step-3').style.display = 'none';
+    document.getElementById('assessor-step-2').style.display = 'none';
+    document.getElementById('assessor-step-1').style.display = 'block';
+    document.getElementById('assessor-progress').style.width = '33%';
+}
+
+function bookAssessorRecommendation() {
+    if (assessorAnswers.recommendationName) {
+        const select = document.getElementById('bk-service');
+        if (select) {
+            // Find and match selection option
+            for (let opt of select.options) {
+                if (opt.textContent.trim().toLowerCase() === assessorAnswers.recommendationName.trim().toLowerCase() ||
+                    opt.value.trim().toLowerCase() === assessorAnswers.recommendationName.trim().toLowerCase()) {
+                    opt.selected = true;
+                    break;
+                }
+            }
+        }
+        
+        // Smooth scroll to booking
+        document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' });
+        showToast(`Selected ${assessorAnswers.recommendationName} in the booking form!`);
+    }
+}
+
 // ─── INITIALIZE ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initHeroParticles();
     restoreSession();
+    updateDynamicNextSlot();
     
     // Set up both portal drawer navigations
     setupMobileSidebar('patient-mobile-menu-btn', 'patient-sidebar-close-btn', 'patient-sidebar');

@@ -10,6 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="style.css"/>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('clinical-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
 </head>
 <body>
 
@@ -48,6 +54,7 @@
             </ul>
 
             <div class="landing-nav-actions">
+                <span class="header-icon material-symbols-outlined" id="theme-toggle-landing" title="Toggle Theme" style="margin-right:8px;">dark_mode</span>
                 <button class="btn-nav-ghost" onclick="showPage('auth'); setAuthRole('patient'); setAuthTab('login')">Patient Login</button>
                 <button class="btn-nav-primary" onclick="showPage('auth'); setAuthRole('doctor'); setAuthTab('login')">Specialist Portal</button>
             </div>
@@ -92,17 +99,31 @@
 
         <div class="hero-image-panel">
             <div class="hero-float-card card-1">
+                <span class="material-symbols-outlined" style="color:var(--color-tertiary)">star</span>
+                <div>
+                    <p style="font-weight:700;font-size:13px;">4.9/5 Rating</p>
+                    <p style="font-size:11px;opacity:0.7;">1,200+ Reviews</p>
+                </div>
+            </div>
+            <div class="hero-float-card card-2">
+                <span class="material-symbols-outlined" style="color:var(--color-primary)">event_available</span>
+                <div>
+                    <p style="font-weight:700;font-size:13px;">Next Opening</p>
+                    <p id="dynamic-next-slot" style="font-size:11px;opacity:0.7;">Loading slot...</p>
+                </div>
+            </div>
+            <div class="hero-float-card card-3">
                 <span class="material-symbols-outlined" style="color:var(--color-tertiary)">verified_user</span>
                 <div>
                     <p style="font-weight:700;font-size:13px;">100% Non-Invasive</p>
                     <p style="font-size:11px;opacity:0.7;">Clinical Protocols</p>
                 </div>
             </div>
-            <div class="hero-float-card card-2">
-                <span class="material-symbols-outlined" style="color:var(--color-primary)">event_available</span>
+            <div class="hero-float-card card-4">
+                <span class="material-symbols-outlined" style="color:var(--color-primary)">workspace_premium</span>
                 <div>
-                    <p style="font-weight:700;font-size:13px;">Next Available</p>
-                    <p style="font-size:11px;opacity:0.7;">Tomorrow 10:30 AM</p>
+                    <p style="font-weight:700;font-size:13px;">Licensed Studio</p>
+                    <p style="font-size:11px;opacity:0.7;">DHA/DOH Certified</p>
                 </div>
             </div>
             <div class="hero-center-circle">
@@ -289,6 +310,84 @@
         </div>
     </section>
 
+    <!-- ── Skin & Hair Assessor Section ── -->
+    <section class="landing-section assessor-section" id="assessor-section" style="background: var(--color-surface-container-low); transition: background-color var(--transition-speed) var(--transition-ease);">
+        <div class="landing-container" style="max-width: 800px;">
+            <div class="section-header" style="margin-bottom: 40px;">
+                <span class="section-eyebrow">Interactive Consultation</span>
+                <h2 class="section-title">Skin & Hair Assessor</h2>
+                <p class="section-subtitle">Answer 2 simple questions to find the ideal clinical protocol for your concerns.</p>
+            </div>
+
+            <div class="assessor-card">
+                <!-- Progress Bar -->
+                <div class="assessor-progress-wrap">
+                    <div id="assessor-progress" style="width: 33%;"></div>
+                </div>
+
+                <!-- Step 1 -->
+                <div id="assessor-step-1" class="assessor-step active">
+                    <h3 style="font-family: var(--font-serif); font-size: 24px; margin-bottom: 24px; color: var(--color-primary); text-align: center;">1. What is your primary area of concern?</h3>
+                    <div class="assessor-options-grid">
+                        <button class="assessor-opt-btn" onclick="selectAssessorOption(1, 'face', 'Face & Skin Tone')">
+                            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-primary);">face</span>
+                            <div>
+                                <p style="font-weight: 700; font-size: 15px;">Face & Skin Tone</p>
+                                <p style="font-size: 12px; opacity: 0.7; margin-top: 2px;">Hyperpigmentation, texture, scars, or hydration</p>
+                            </div>
+                        </button>
+                        <button class="assessor-opt-btn" onclick="selectAssessorOption(1, 'hair', 'Hair & Scalp')">
+                            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-primary);">spa</span>
+                            <div>
+                                <p style="font-weight: 700; font-size: 15px;">Hair & Scalp</p>
+                                <p style="font-size: 12px; opacity: 0.7; margin-top: 2px;">Thinning, hair regrowth, dandruff, or extensions</p>
+                            </div>
+                        </button>
+                        <button class="assessor-opt-btn" onclick="selectAssessorOption(1, 'laser', 'Laser Treatments')">
+                            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-primary);">bolt</span>
+                            <div>
+                                <p style="font-weight: 700; font-size: 15px;">Laser Treatments</p>
+                                <p style="font-size: 12px; opacity: 0.7; margin-top: 2px;">Permanent hair removal or tattoo fading</p>
+                            </div>
+                        </button>
+                        <button class="assessor-opt-btn" onclick="selectAssessorOption(1, 'makeup', 'Semi-Permanent Artistry')">
+                            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-primary);">brush</span>
+                            <div>
+                                <p style="font-weight: 700; font-size: 15px;">Semi-Permanent Artistry</p>
+                                <p style="font-size: 12px; opacity: 0.7; margin-top: 2px;">SPMU eyebrows shaping or lip blush contour</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div id="assessor-step-2" class="assessor-step" style="display: none;">
+                    <h3 id="assessor-q2" style="font-family: var(--font-serif); font-size: 24px; margin-bottom: 24px; color: var(--color-primary); text-align: center;">2. Select your specific sub-category:</h3>
+                    <div id="assessor-options-q2" class="assessor-options-grid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                    <div style="margin-top: 32px; text-align: center;">
+                        <button class="btn-nav-ghost" onclick="prevAssessorStep()" style="border-radius: 4px;">Back</button>
+                    </div>
+                </div>
+
+                <!-- Step 3 (Results) -->
+                <div id="assessor-step-3" class="assessor-step" style="display: none;">
+                    <div style="text-align: center; padding: 20px 0;">
+                        <span class="material-symbols-outlined" style="font-size: 64px; color: var(--color-primary); margin-bottom: 16px;">verified</span>
+                        <h3 style="font-family: var(--font-serif); font-size: 28px; margin-bottom: 12px; color: var(--color-primary);">Recommended Treatment</h3>
+                        <div id="assessor-recommendation-box">
+                            <!-- Recommended treatment populated dynamically -->
+                        </div>
+                        <div style="display: flex; gap: 16px; justify-content: center; margin-top: 32px;">
+                            <button class="btn-nav-ghost" onclick="resetAssessor()" style="border-radius: 4px;">Start Over</button>
+                            <button class="btn-nav-primary" onclick="bookAssessorRecommendation()" style="border-radius: 4px; border: none;">Book This Treatment Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- ── Booking Section ── -->
     <section class="landing-section booking-section" id="booking-section">
