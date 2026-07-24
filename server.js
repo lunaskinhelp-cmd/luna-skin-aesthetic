@@ -60,7 +60,7 @@ const INITIAL_PATIENTS = [
         concern: "Post-Inflammatory Hyperpigmentation",
         routine: "Morning:\n1. Gentle Cleanser\n2. Hyaluronic Acid Serum\n3. Vitamin C (10%)\n4. Mineral Sunscreen SPF 50\n\nEvening:\n1. Oil Cleanser\n2. Hydrating Cleanser\n3. Niacinamide Serum (5%)\n4. Ceramide Cream",
         observations: "Client presents with localized PIH around the chin area. Skin barrier appears compromised in the perioral region. Recommended immediate cessation of physical exfoliants and initiation of ceramide-rich barrier repair.",
-        protocol: "3-Month Corrective Plan:\nPhase 1 (Barrier Repair) 2-4 weeks.\nPhase 2 (Pigmentation Attack) with Q-Switched Laser & Advanced Cosmetic Chemical Exfoliation.\nPhase 3 (Maintenance) with SPF 50+ and Vitamin C infusion.",
+        protocol: "3-Month Corrective Plan:\nPhase 1 (Barrier Repair) 2-4 weeks.\nPhase 2 (Pigmentation Attack) with Advanced Cosmetic Chemical Exfoliation.\nPhase 3 (Maintenance) with SPF 50+ and Vitamin C infusion.",
         status: "Active",
         signed: true,
         signatureId: "#882-LUNA-SAFE-921",
@@ -69,13 +69,13 @@ const INITIAL_PATIENTS = [
         beforeImg: "before_treatment.jpg",
         afterImg: "after_treatment.jpg",
         procedures: [
-            { name: "Carbon Laser Peel", date: "2023-10-12", clinic: "Nova Aesthetic Center" },
+            { name: "Mandelic Acid Peel", date: "2023-10-12", clinic: "Nova Aesthetic Center" },
             { name: "HydraFacial Deluxe", date: "2024-01-05", clinic: "Luna Skin Aesthetic" },
             { name: "Chemical Peel (TCA 15%)", date: "2024-03-14", clinic: "Luna Skin Aesthetic" }
         ],
         logs: [
-            { date: "2024-05-02", treatment: "Laser Genesis (12J/cm2)", reaction: "Mild Erythema", notes: "Client felt minimal heat; no adverse response." },
-            { date: "2024-05-16", treatment: "Barrier Rescue Facial", reaction: "Excellent", notes: "Skin hydration levels increased by 14% post-treat." }
+            { date: "2024-05-02", therapy: "Skin Brightening Therapy", reaction: "Mild Erythema", notes: "Client felt minimal warmth; no adverse response." },
+            { date: "2024-05-16", therapy: "Barrier Rescue Facial", reaction: "Excellent", notes: "Skin hydration levels increased by 14% post-treat." }
         ],
         skincare: [
             { name: "Luna Barrier Repair Serum", instructions: "2 drops, AM & PM after cleansing", qty: 1 },
@@ -110,8 +110,8 @@ const INITIAL_PATIENTS = [
             { name: "Soothe & Hydrate Facial", date: "2024-04-25", clinic: "Luna Skin Aesthetic" }
         ],
         logs: [
-            { date: "2024-04-18", treatment: "Blue LED (20 mins)", reaction: "Normal", notes: "Patient reported calming effect on redness." },
-            { date: "2024-05-02", treatment: "Blue & Red LED + Soothing Mask", reaction: "Great", notes: "Inflammatory lesions decreased by 20%." }
+            { date: "2024-04-18", therapy: "Blue LED (20 mins)", reaction: "Normal", notes: "Patient reported calming effect on redness." },
+            { date: "2024-05-02", therapy: "Blue & Red LED + Soothing Mask", reaction: "Great", notes: "Inflammatory lesions decreased by 20%." }
         ],
         skincare: [
             { name: "Soothe Calming Cleanser", instructions: "Use AM & PM, rinse with cool water", qty: 1 },
@@ -147,8 +147,8 @@ const INITIAL_PATIENTS = [
             { name: "Microcurrent Sculpting", date: "2024-04-12", clinic: "Luna Skin Aesthetic" }
         ],
         logs: [
-            { date: "2024-03-15", treatment: "RF Face Lift (Temp 41C)", reaction: "Mild Erythema", notes: "Tightening effect observed immediately post-treatment." },
-            { date: "2024-03-29", treatment: "RF Face Lift (Temp 42C)", reaction: "Normal", notes: "Nasolabial fold depth reduced slightly." }
+            { date: "2024-03-15", therapy: "RF Face Lift (Temp 41C)", reaction: "Mild Erythema", notes: "Tightening effect observed immediately post-treatment." },
+            { date: "2024-03-29", therapy: "RF Face Lift (Temp 42C)", reaction: "Normal", notes: "Nasolabial fold depth reduced slightly." }
         ],
         skincare: [
             { name: "Luminous Lift Peptide Cream", instructions: "Apply PM to face & neck", qty: 1 },

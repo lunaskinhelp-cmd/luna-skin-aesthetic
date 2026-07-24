@@ -2642,7 +2642,7 @@ footer.app-footer .footer-links a:hover {
 
 .timeline-content { flex: 1; }
 .timeline-date { font-size: 11px; color: var(--color-secondary); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
-.timeline-treatment { font-size: 15px; font-weight: 600; color: var(--color-primary); margin: 4px 0; }
+.timeline-therapy { font-size: 15px; font-weight: 600; color: var(--color-primary); margin: 4px 0; }
 .timeline-notes { font-size: 13px; color: var(--color-secondary); }
 
 /* Appointment Display */

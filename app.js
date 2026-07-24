@@ -255,7 +255,7 @@ function initPatientPortal(session) {
                     document.getElementById('cs-concern').textContent = found.concern || '—';
                     document.getElementById('cs-skintype').textContent = found.skintype || '—';
                     document.getElementById('cs-allergies').textContent = found.allergies || 'None';
-                    document.getElementById('cs-protocol').textContent = found.protocol || 'No treatment protocol assigned yet.';
+                    document.getElementById('cs-protocol').textContent = found.protocol || 'No therapy protocol assigned yet.';
                     document.getElementById('cs-routine').textContent = found.routine || 'No routine prescribed yet.';
                     
                     const pillsContainer = document.getElementById('cs-concerns-pills');
@@ -308,7 +308,7 @@ function initPatientPortal(session) {
         document.getElementById('cs-concern').textContent = record.concern || '—';
         document.getElementById('cs-skintype').textContent = record.skintype || '—';
         document.getElementById('cs-allergies').textContent = record.allergies || 'None';
-        document.getElementById('cs-protocol').textContent = record.protocol || 'No treatment protocol assigned yet.';
+        document.getElementById('cs-protocol').textContent = record.protocol || 'No therapy protocol assigned yet.';
         document.getElementById('cs-routine').textContent = record.routine || 'No routine prescribed yet.';
 
         // Concerns pills
@@ -366,7 +366,7 @@ function renderPatientTimeline(record) {
     const container = document.getElementById('pt-timeline');
     const logs = record.logs || [];
     if (logs.length === 0) {
-        container.innerHTML = '<p class="text-secondary" style="text-align:center;font-style:italic;padding:24px 0;">No treatment logs recorded yet.</p>';
+        container.innerHTML = '<p class="text-secondary" style="text-align:center;font-style:italic;padding:24px 0;">No therapy logs recorded yet.</p>';
         return;
     }
 
@@ -380,7 +380,7 @@ function renderPatientTimeline(record) {
             <div class="timeline-dot"></div>
             <div class="timeline-content">
                 <p class="timeline-date">${formatted}</p>
-                <p class="timeline-treatment">${log.treatment}</p>
+                <p class="timeline-therapy">${log.therapy || log.treatment || ''}</p>
                 <p class="timeline-notes">${log.notes || ''}</p>
             </div>
             <span class="status-badge" style="font-size:10px;align-self:flex-start;white-space:nowrap;">${log.reaction}</span>
@@ -696,8 +696,8 @@ function loadPatientData(patient) {
     document.getElementById('patient-photo-before-date').textContent = patient.beforeDate || '';
     document.getElementById('patient-photo-after-date').textContent = patient.afterDate || '';
 
-    const beforeImgs = document.querySelectorAll("img[alt='Before Treatment']");
-    const afterImgs = document.querySelectorAll("img[alt='After Treatment (8 Weeks)'], img[alt='After Treatment']");
+    const beforeImgs = document.querySelectorAll("img[alt='Before Therapy']");
+    const afterImgs = document.querySelectorAll("img[alt='After Therapy (8 Weeks)'], img[alt='After Therapy']");
     if (patient.beforeImg) beforeImgs.forEach(img => img.src = patient.beforeImg);
     if (patient.afterImg) afterImgs.forEach(img => img.src = patient.afterImg);
 
@@ -825,12 +825,12 @@ function renderProceduresTable() {
 }
 
 function renderLogsTable() {
-    const tbody = document.querySelector('#treatment-log-table tbody');
+    const tbody = document.querySelector('#therapy-log-table tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
 
     if (!activePatient?.logs?.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-secondary" style="text-align:center;font-style:italic;">No treatment entries logged</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-secondary" style="text-align:center;font-style:italic;">No therapy entries logged</td></tr>';
         return;
     }
 
@@ -840,7 +840,7 @@ function renderLogsTable() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td style="font-weight:600;white-space:nowrap;color:var(--color-primary);">${formatted}</td>
-            <td>${log.treatment}</td>
+            <td>${log.therapy || log.treatment || ''}</td>
             <td><span class="status-badge" style="font-size:10px;border-color:var(--color-outline);">${log.reaction}</span></td>
             <td class="text-secondary" style="font-size:14px;max-width:300px;">${log.notes}</td>
         `;
@@ -1434,7 +1434,7 @@ document.getElementById('proc-save-btn')?.addEventListener('click', async () => 
 // ─── ADD LOG ENTRY MODAL ──────────────────────────────────────
 document.getElementById('add-log-entry-btn')?.addEventListener('click', () => {
     document.getElementById('log-date-input').value = new Date().toISOString().slice(0, 10);
-    document.getElementById('log-treatment-input').value = '';
+    document.getElementById('log-therapy-input').value = '';
     document.getElementById('log-reaction-input').value = '';
     document.getElementById('log-notes-input').value = '';
     openModal('log-modal');
@@ -1442,17 +1442,17 @@ document.getElementById('add-log-entry-btn')?.addEventListener('click', () => {
 
 document.getElementById('log-save-btn')?.addEventListener('click', async () => {
     const date = document.getElementById('log-date-input').value;
-    const treatment = document.getElementById('log-treatment-input').value.trim();
+    const therapy = document.getElementById('log-therapy-input').value.trim();
     const reaction = document.getElementById('log-reaction-input').value.trim();
     const notes = document.getElementById('log-notes-input').value.trim();
 
-    if (!date || !treatment || !reaction) { showToast('Date, treatment, and reaction fields are required.', 'error'); return; }
+    if (!date || !therapy || !reaction) { showToast('Date, therapy, and reaction fields are required.', 'error'); return; }
 
-    activePatient.logs.push({ date, treatment, reaction, notes });
+    activePatient.logs.push({ date, therapy, reaction, notes });
     await savePatientToServer(activePatient);
     renderLogsTable();
     closeModal('log-modal');
-    showToast('Treatment log entry added successfully.');
+    showToast('Therapy log entry added successfully.');
 });
 
 // ─── PRESCRIBE SKINCARE MODAL ─────────────────────────────────
@@ -1507,7 +1507,7 @@ document.getElementById('save-protocol-btn')?.addEventListener('click', async ()
     saveBtn.style.display = 'none';
 
     await savePatientToServer(activePatient);
-    showToast('Treatment protocol updated successfully.');
+    showToast('Therapy protocol updated successfully.');
 });
 
 // ─── SAVE CASE SHEET BUTTON ───────────────────────────────────
@@ -1861,7 +1861,7 @@ const assessorData = {
                 desc: "Precision collagen induction therapy that stimulates natural skin healing, reducing the depth of acne scars, refining pores, and tightening texture."
             },
             bright: {
-                name: "Skin Brightening Treatments",
+                name: "Skin Brightening Therapy",
                 desc: "Targeted cosmetic brightening infusions combined with soothing serums to diminish melasma, age spots, and balance skin tone."
             }
         }
@@ -1875,33 +1875,16 @@ const assessorData = {
         ],
         recommendations: {
             thinning: {
-                name: "Hair Regrowth Treatment",
+                name: "Hair Regrowth Therapy",
                 desc: "Scalp micro-circulation stimulation and active nutrient cocktails infused directly to revitalize dormant hair follicles and boost density."
             },
             flakes: {
-                name: "Dandruff Treatment",
-                desc: "Scalp exfoliation and anti-fungal botanical treatments to regulate sebum, clarify the scalp, and prevent future flaking."
+                name: "Dandruff Therapy",
+                desc: "Scalp exfoliation and anti-fungal botanical therapies to regulate sebum, clarify the scalp, and prevent future flaking."
             },
             length: {
                 name: "Hair Extension",
                 desc: "Premium, seamless application of high-quality human hair extensions customized to blend naturally with your hair type and style."
-            }
-        }
-    },
-    laser: {
-        title: "2. Choose your laser treatment goal:",
-        options: [
-            { key: "hair_rem", label: "Unwanted Facial or Body Hair", desc: "Seeking permanent, smooth reduction of body or facial hair" },
-            { key: "tattoo", label: "Tattoo Fading or Removal", desc: "Desire to fade or completely clear an existing tattoo" }
-        ],
-        recommendations: {
-            hair_rem: {
-                name: "Hair Removal Laser",
-                desc: "Dual-wavelength medical grade laser sessions tailored safely to all skin types for highly effective hair follicle reduction with cooling comfort."
-            },
-            tattoo: {
-                name: "Tattoo Removal Laser",
-                desc: "High-precision Q-Switched Nd:YAG laser that shatters tattoo inks into micro-particles for safe, progressive clearing."
             }
         }
     },
