@@ -778,80 +778,99 @@ app.post('/api/reset', (req, res) => {
 
 // ─── STATIC ASSETS ───────────────────────────────────────────────────────────
 
-// Resolve the project root directory robustly across environments:
-// - Local dev: __dirname = the project root folder itself
-// - Vercel serverless (server.js called directly): __dirname = /var/task/
-// - Vercel serverless (required from api/index.js): __dirname = /var/task/ (still root)
-// We try multiple candidates and pick the first one that has index.html
-const ROOT_CANDIDATES = [
-    __dirname,
-    path.join(__dirname, '..'),
-    path.resolve(process.cwd()),
-    '/var/task'
-];
+// Static asset helper with explicit path.join(__dirname, ...) calls for Vercel @vercel/nft tracing
+const staticAssets = {
+    '/index.html':           { path: path.join(__dirname, 'index.html'), mime: 'text/html; charset=utf-8' },
+    '/style.css':            { path: path.join(__dirname, 'style.css'), mime: 'text/css; charset=utf-8' },
+    '/app.js':               { path: path.join(__dirname, 'app.js'), mime: 'application/javascript; charset=utf-8' },
+    '/logo.png':             { path: path.join(__dirname, 'logo.png'), mime: 'image/png' },
+    '/logo_white.png':       { path: path.join(__dirname, 'logo_white.png'), mime: 'image/png' },
+    '/logo.svg':             { path: path.join(__dirname, 'logo.svg'), mime: 'image/svg+xml' },
+    '/practitioner.jpg':     { path: path.join(__dirname, 'practitioner.jpg'), mime: 'image/jpeg' },
+    '/before_treatment.jpg': { path: path.join(__dirname, 'before_treatment.jpg'), mime: 'image/jpeg' },
+    '/after_treatment.jpg':  { path: path.join(__dirname, 'after_treatment.jpg'), mime: 'image/jpeg' }
+};
 
-const projectRoot = ROOT_CANDIDATES.find(dir => {
-    try { return fs.existsSync(path.join(dir, 'index.html')); } catch(e) { return false; }
-}) || __dirname;
-
-console.log(`[Luna] __dirname: ${__dirname}`);
-console.log(`[Luna] projectRoot resolved to: ${projectRoot}`);
-console.log(`[Luna] style.css exists: ${fs.existsSync(path.join(projectRoot, 'style.css'))}`);
-console.log(`[Luna] index.html exists: ${fs.existsSync(path.join(projectRoot, 'index.html'))}`);
+// In-memory cache for critical text assets loaded at startup
+const fileCache = {};
+['/index.html', '/style.css', '/app.js'].forEach(route => {
+    try {
+        const filePath = staticAssets[route].path;
+        if (fs.existsSync(filePath)) {
+            fileCache[route] = fs.readFileSync(filePath, 'utf8');
+        }
+    } catch (err) {
+        console.warn(`[Luna] Pre-cache error for ${route}:`, err.message);
+    }
+});
 
 app.use('/uploads', express.static(UPLOADS_DIR));
 try {
-    const localUploads = path.join(projectRoot, 'uploads');
+    const localUploads = path.join(__dirname, 'uploads');
     if (localUploads !== UPLOADS_DIR) app.use('/uploads', express.static(localUploads));
 } catch(e) {}
 
-// Explicitly serve key static files with correct MIME types
-const staticFiles = [
-    { path: '/style.css',              mime: 'text/css; charset=utf-8' },
-    { path: '/app.js',                 mime: 'application/javascript; charset=utf-8' },
-    { path: '/logo.png',               mime: 'image/png' },
-    { path: '/logo_white.png',         mime: 'image/png' },
-    { path: '/logo.svg',               mime: 'image/svg+xml' },
-    { path: '/practitioner.jpg',       mime: 'image/jpeg' },
-    { path: '/before_treatment.jpg',   mime: 'image/jpeg' },
-    { path: '/after_treatment.jpg',    mime: 'image/jpeg' },
-    { path: '/index.html',             mime: 'text/html; charset=utf-8' },
-];
-
-staticFiles.forEach(({ path: filePath, mime }) => {
-    app.get(filePath, (req, res) => {
-        const fullPath = path.join(projectRoot, filePath);
-        console.log(`[Luna] Serving ${filePath} from ${fullPath}`);
-        res.setHeader('Content-Type', mime);
+// Serve explicit static asset routes
+Object.keys(staticAssets).forEach(route => {
+    const asset = staticAssets[route];
+    app.get(route, (req, res) => {
+        res.setHeader('Content-Type', asset.mime);
         res.setHeader('Cache-Control', 'public, max-age=3600');
-        res.sendFile(fullPath, (err) => {
-            if (err) {
-                console.error(`[Luna] Error serving ${filePath}:`, err.message);
-                res.status(404).send(`File not found: ${filePath}`);
-            }
-        });
+        if (fileCache[route]) {
+            return res.send(fileCache[route]);
+        }
+        if (fs.existsSync(asset.path)) {
+            return res.sendFile(asset.path);
+        }
+        res.status(404).send(`File not found: ${route}`);
     });
 });
 
-// Serve all other static files from project root
-app.use(express.static(projectRoot));
+app.use(express.static(__dirname));
 
-// SPA catch-all: serve index.html for any unmatched route
+// SPA catch-all: serve index.html for any unmatched non-API route
 app.get('*', (req, res) => {
-    const indexPath = path.join(projectRoot, 'index.html');
-    console.log(`[Luna] SPA catch-all for ${req.path}, serving index.html from ${indexPath}`);
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: `API route ${req.path} not found.` });
+    }
+
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.sendFile(indexPath, (err) => {
-        if (err) {
-            console.error(`[Luna] CRITICAL: Cannot serve index.html from ${indexPath}:`, err.message);
-            // List all candidates for debugging
-            ROOT_CANDIDATES.forEach(dir => {
-                const exists = fs.existsSync(path.join(dir, 'index.html'));
-                console.error(`  Candidate ${dir}/index.html: ${exists ? 'EXISTS' : 'NOT FOUND'}`);
-            });
-            res.status(500).send(`Server Error: Cannot find index.html. projectRoot=${projectRoot}`);
+
+    // 1. In-memory cached index.html
+    if (fileCache['/index.html']) {
+        return res.send(fileCache['/index.html']);
+    }
+
+    // 2. Direct filesystem read
+    const indexPath = staticAssets['/index.html'].path;
+    if (fs.existsSync(indexPath)) {
+        try {
+            const html = fs.readFileSync(indexPath, 'utf8');
+            fileCache['/index.html'] = html;
+            return res.send(html);
+        } catch (e) {}
+    }
+
+    // 3. Fallback attempts across candidate paths
+    const candidates = [
+        indexPath,
+        path.join(process.cwd(), 'index.html'),
+        '/var/task/index.html',
+        path.join(__dirname, '..', 'index.html')
+    ];
+
+    for (const cand of candidates) {
+        if (fs.existsSync(cand)) {
+            try {
+                const html = fs.readFileSync(cand, 'utf8');
+                fileCache['/index.html'] = html;
+                return res.send(html);
+            } catch (e) {}
         }
-    });
+    }
+
+    console.error(`[Luna] CRITICAL: index.html not found in any candidate paths`);
+    res.status(500).send(`Server Error: Cannot find index.html in serverless environment.`);
 });
 
 // Global Express Error Handler
