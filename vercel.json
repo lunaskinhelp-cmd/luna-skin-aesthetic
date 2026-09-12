@@ -2,13 +2,21 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": "{index.html,style.css,app.js,logo.png,logo_white.png,logo.svg,practitioner.jpg,before_treatment.jpg,after_treatment.jpg,data/**}"
+      "includeFiles": "data/**"
     }
   },
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
       "destination": "/api/index.js"
+    },
+    {
+      "source": "/uploads/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
