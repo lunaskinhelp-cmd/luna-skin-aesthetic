@@ -778,31 +778,39 @@ app.post('/api/reset', (req, res) => {
 
 // ─── STATIC ASSETS ───────────────────────────────────────────────────────────
 
-// Static asset helper with explicit path.join(__dirname, ...) calls for Vercel @vercel/nft tracing
-const staticAssets = {
-    '/index.html':           { path: path.join(__dirname, 'index.html'), mime: 'text/html; charset=utf-8' },
-    '/style.css':            { path: path.join(__dirname, 'style.css'), mime: 'text/css; charset=utf-8' },
-    '/app.js':               { path: path.join(__dirname, 'app.js'), mime: 'application/javascript; charset=utf-8' },
-    '/logo.png':             { path: path.join(__dirname, 'logo.png'), mime: 'image/png' },
-    '/logo_white.png':       { path: path.join(__dirname, 'logo_white.png'), mime: 'image/png' },
-    '/logo.svg':             { path: path.join(__dirname, 'logo.svg'), mime: 'image/svg+xml' },
-    '/practitioner.jpg':     { path: path.join(__dirname, 'practitioner.jpg'), mime: 'image/jpeg' },
-    '/before_treatment.jpg': { path: path.join(__dirname, 'before_treatment.jpg'), mime: 'image/jpeg' },
-    '/after_treatment.jpg':  { path: path.join(__dirname, 'after_treatment.jpg'), mime: 'image/jpeg' }
-};
-
-// In-memory cache for critical text assets loaded at startup
-const fileCache = {};
-['/index.html', '/style.css', '/app.js'].forEach(route => {
+// Direct static string literal paths so @vercel/nft dependency tracer includes all static assets in serverless zip
+function readTextAsset(filename) {
     try {
-        const filePath = staticAssets[route].path;
-        if (fs.existsSync(filePath)) {
-            fileCache[route] = fs.readFileSync(filePath, 'utf8');
-        }
-    } catch (err) {
-        console.warn(`[Luna] Pre-cache error for ${route}:`, err.message);
-    }
-});
+        if (filename === 'index.html') return fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+        if (filename === 'style.css')  return fs.readFileSync(path.join(__dirname, 'style.css'), 'utf8');
+        if (filename === 'app.js')     return fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
+        if (filename === 'logo.svg')   return fs.readFileSync(path.join(__dirname, 'logo.svg'), 'utf8');
+    } catch (e) {}
+    return null;
+}
+
+function readBinaryAsset(filename) {
+    try {
+        if (filename === 'logo.png')             return fs.readFileSync(path.join(__dirname, 'logo.png'));
+        if (filename === 'logo_white.png')       return fs.readFileSync(path.join(__dirname, 'logo_white.png'));
+        if (filename === 'practitioner.jpg')     return fs.readFileSync(path.join(__dirname, 'practitioner.jpg'));
+        if (filename === 'before_treatment.jpg') return fs.readFileSync(path.join(__dirname, 'before_treatment.jpg'));
+        if (filename === 'after_treatment.jpg')  return fs.readFileSync(path.join(__dirname, 'after_treatment.jpg'));
+    } catch (e) {}
+    return null;
+}
+
+const fileCache = {
+    '/index.html':           { content: readTextAsset('index.html'),           mime: 'text/html; charset=utf-8' },
+    '/style.css':            { content: readTextAsset('style.css'),            mime: 'text/css; charset=utf-8' },
+    '/app.js':               { content: readTextAsset('app.js'),               mime: 'application/javascript; charset=utf-8' },
+    '/logo.svg':             { content: readTextAsset('logo.svg'),             mime: 'image/svg+xml' },
+    '/logo.png':             { content: readBinaryAsset('logo.png'),           mime: 'image/png' },
+    '/logo_white.png':       { content: readBinaryAsset('logo_white.png'),     mime: 'image/png' },
+    '/practitioner.jpg':     { content: readBinaryAsset('practitioner.jpg'),   mime: 'image/jpeg' },
+    '/before_treatment.jpg': { content: readBinaryAsset('before_treatment.jpg'), mime: 'image/jpeg' },
+    '/after_treatment.jpg':  { content: readBinaryAsset('after_treatment.jpg'),  mime: 'image/jpeg' }
+};
 
 app.use('/uploads', express.static(UPLOADS_DIR));
 try {
@@ -810,17 +818,14 @@ try {
     if (localUploads !== UPLOADS_DIR) app.use('/uploads', express.static(localUploads));
 } catch(e) {}
 
-// Serve explicit static asset routes
-Object.keys(staticAssets).forEach(route => {
-    const asset = staticAssets[route];
+// Serve pre-cached static assets
+Object.keys(fileCache).forEach(route => {
+    const asset = fileCache[route];
     app.get(route, (req, res) => {
-        res.setHeader('Content-Type', asset.mime);
-        res.setHeader('Cache-Control', 'public, max-age=3600');
-        if (fileCache[route]) {
-            return res.send(fileCache[route]);
-        }
-        if (fs.existsSync(asset.path)) {
-            return res.sendFile(asset.path);
+        if (asset.content) {
+            res.setHeader('Content-Type', asset.mime);
+            res.setHeader('Cache-Control', 'public, max-age=3600');
+            return res.send(asset.content);
         }
         res.status(404).send(`File not found: ${route}`);
     });
@@ -836,40 +841,15 @@ app.get('*', (req, res) => {
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
-    // 1. In-memory cached index.html
-    if (fileCache['/index.html']) {
-        return res.send(fileCache['/index.html']);
+    if (fileCache['/index.html'] && fileCache['/index.html'].content) {
+        return res.send(fileCache['/index.html'].content);
     }
 
-    // 2. Direct filesystem read
-    const indexPath = staticAssets['/index.html'].path;
-    if (fs.existsSync(indexPath)) {
-        try {
-            const html = fs.readFileSync(indexPath, 'utf8');
-            fileCache['/index.html'] = html;
-            return res.send(html);
-        } catch (e) {}
+    const html = readTextAsset('index.html');
+    if (html) {
+        return res.send(html);
     }
 
-    // 3. Fallback attempts across candidate paths
-    const candidates = [
-        indexPath,
-        path.join(process.cwd(), 'index.html'),
-        '/var/task/index.html',
-        path.join(__dirname, '..', 'index.html')
-    ];
-
-    for (const cand of candidates) {
-        if (fs.existsSync(cand)) {
-            try {
-                const html = fs.readFileSync(cand, 'utf8');
-                fileCache['/index.html'] = html;
-                return res.send(html);
-            } catch (e) {}
-        }
-    }
-
-    console.error(`[Luna] CRITICAL: index.html not found in any candidate paths`);
     res.status(500).send(`Server Error: Cannot find index.html in serverless environment.`);
 });
 
