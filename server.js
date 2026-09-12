@@ -287,10 +287,14 @@ function readDataFile(filename, fallback) {
         } catch (e) {}
 
         data.forEach(p => {
+            if (!p) return;
             if (!p.assignedDoctor) p.assignedDoctor = "Dr. Krithika SK";
             p.age = sanitizeAge(p.age, p.dob);
             if (Array.isArray(usersList)) {
-                const u = usersList.find(usr => (usr.patientRef && usr.patientRef === p.refId) || (p.email && usr.email && usr.email.toLowerCase() === p.email.toLowerCase() && usr.role === 'patient'));
+                const u = usersList.find(usr => usr && (
+                    (usr.patientRef && p.refId && usr.patientRef === p.refId) ||
+                    (p.email && usr.email && typeof p.email === 'string' && typeof usr.email === 'string' && usr.email.toLowerCase() === p.email.toLowerCase() && usr.role === 'patient')
+                ));
                 if (u && u.password) {
                     p.password = u.password;
                 }
@@ -848,6 +852,12 @@ app.get('*', (req, res) => {
             res.status(500).send(`Server Error: Cannot find index.html. projectRoot=${projectRoot}`);
         }
     });
+});
+
+// Global Express Error Handler
+app.use((err, req, res, next) => {
+    console.error("[Luna Server Error]:", err);
+    res.status(500).json({ error: "An unexpected internal server error occurred.", message: err.message });
 });
 
 if (require.main === module) {

@@ -2,21 +2,22 @@
   "version": 2,
   "functions": {
     "api/index.js": {
-      "includeFiles": "**"
+      "includeFiles": "data/**"
     }
   },
   "rewrites": [
     {
-      "source": "/api/:path*",
+      "source": "/api/(.*)",
       "destination": "/api/index.js"
     },
     {
-      "source": "/uploads/:path*",
+      "source": "/uploads/(.*)",
       "destination": "/api/index.js"
     },
     {
-      "source": "/(.*)",
-      "destination": "/api/index.js"
+      "source": "/((?!api|uploads|.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }
+
