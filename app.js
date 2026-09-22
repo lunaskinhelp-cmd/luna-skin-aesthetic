@@ -689,12 +689,7 @@ async function submitLandingBooking(e) {
         });
         if (!res.ok) throw new Error('Failed to post appointment request');
 
-        const data = await res.json();
-        if (data.emailSent) {
-            showToast(`Thank you, ${name}! Your appointment request has been sent & email dispatched.`);
-        } else {
-            showToast(`Thank you, ${name}! Request received! (${data.emailReason || 'Check email config in Settings'})`);
-        }
+        showToast(`Thank you, ${name}! Your appointment request has been sent to ${CLINIC_EMAIL}.`);
         document.getElementById('landing-booking-form').reset();
 
         // Open modal with Google Calendar link
@@ -2061,12 +2056,6 @@ document.getElementById('settings-btn')?.addEventListener('click', async () => {
         if (document.getElementById('setting-address')) document.getElementById('setting-address').value = settings.address || CLINIC_ADDRESS;
         if (document.getElementById('setting-phone')) document.getElementById('setting-phone').value = settings.phone || CLINIC_PHONE;
         if (document.getElementById('setting-email')) document.getElementById('setting-email').value = settings.email || CLINIC_EMAIL;
-
-        if (document.getElementById('setting-smtp-host')) document.getElementById('setting-smtp-host').value = settings.smtpHost || 'smtp.gmail.com';
-        if (document.getElementById('setting-smtp-port')) document.getElementById('setting-smtp-port').value = settings.smtpPort || '465';
-        if (document.getElementById('setting-smtp-user')) document.getElementById('setting-smtp-user').value = settings.smtpUser || settings.email || CLINIC_EMAIL;
-        if (document.getElementById('setting-smtp-pass')) document.getElementById('setting-smtp-pass').value = settings.smtpPass || '';
-        if (document.getElementById('setting-test-email-target')) document.getElementById('setting-test-email-target').value = settings.email || CLINIC_EMAIL;
     } catch (e) {}
     openModal('settings-modal');
 });
@@ -2078,11 +2067,7 @@ document.getElementById('setting-save-btn')?.addEventListener('click', async () 
         licenseId: document.getElementById('setting-license').value,
         address: document.getElementById('setting-address')?.value || CLINIC_ADDRESS,
         phone: document.getElementById('setting-phone')?.value || CLINIC_PHONE,
-        email: document.getElementById('setting-email')?.value || CLINIC_EMAIL,
-        smtpHost: document.getElementById('setting-smtp-host')?.value || 'smtp.gmail.com',
-        smtpPort: document.getElementById('setting-smtp-port')?.value || '465',
-        smtpUser: document.getElementById('setting-smtp-user')?.value || CLINIC_EMAIL,
-        smtpPass: document.getElementById('setting-smtp-pass')?.value || ''
+        email: document.getElementById('setting-email')?.value || CLINIC_EMAIL
     };
     try {
         await fetch('/api/settings', {
@@ -2091,57 +2076,9 @@ document.getElementById('setting-save-btn')?.addEventListener('click', async () 
             body: JSON.stringify(newSettings)
         });
         closeModal('settings-modal');
-        showToast('Portal & Email settings saved successfully.');
+        showToast('Portal settings saved successfully.');
     } catch (e) {
         showToast('Failed to save settings.', 'error');
-    }
-});
-
-document.getElementById('test-email-btn')?.addEventListener('click', async () => {
-    const btn = document.getElementById('test-email-btn');
-    const targetEmail = document.getElementById('setting-test-email-target')?.value || CLINIC_EMAIL;
-    if (!targetEmail) return showToast('Please enter a target email address for the test.', 'error');
-
-    // First save settings so backend has latest SMTP credentials
-    const newSettings = {
-        clinicName: document.getElementById('setting-clinic-name').value,
-        dermatologist: document.getElementById('setting-dermatologist').value,
-        licenseId: document.getElementById('setting-license').value,
-        address: document.getElementById('setting-address')?.value || CLINIC_ADDRESS,
-        phone: document.getElementById('setting-phone')?.value || CLINIC_PHONE,
-        email: document.getElementById('setting-email')?.value || CLINIC_EMAIL,
-        smtpHost: document.getElementById('setting-smtp-host')?.value || 'smtp.gmail.com',
-        smtpPort: document.getElementById('setting-smtp-port')?.value || '465',
-        smtpUser: document.getElementById('setting-smtp-user')?.value || CLINIC_EMAIL,
-        smtpPass: document.getElementById('setting-smtp-pass')?.value || ''
-    };
-
-    btn.disabled = true;
-    btn.innerHTML = '<span class="material-symbols-outlined spin" style="font-size:16px;">sync</span> Sending...';
-
-    try {
-        await fetch('/api/settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newSettings)
-        });
-
-        const res = await fetch('/api/settings/test-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ targetEmail })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-            showToast(`✅ ${data.message}`);
-        } else {
-            showToast(`❌ ${data.error || 'Test email failed. Please check SMTP App Password.'}`, 'error');
-        }
-    } catch (err) {
-        showToast(`Test email error: ${err.message}`, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">send</span> Test Email';
     }
 });
 

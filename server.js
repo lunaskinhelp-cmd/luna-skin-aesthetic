@@ -1,10 +1,8 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -196,75 +194,8 @@ const INITIAL_SETTINGS = {
     licenseId: "#882-LUNA-SAFE-921",
     address: "200K/5, Seyad plaza, Tiruchendur main road, palayamkottai, Tirunelveli, Tamil Nadu 627002",
     phone: "9025676090",
-    email: "lunaskinaesthetics24@gmail.com",
-    smtpHost: "smtp.gmail.com",
-    smtpPort: "465",
-    smtpUser: "lunaskinaesthetics24@gmail.com",
-    smtpPass: "",
-    smtpSecure: true
+    email: "lunaskinaesthetics24@gmail.com"
 };
-
-// ─── Nodemailer SMTP Helper Functions ──────────────────────────────────────────
-
-function getTransporter() {
-    const settings = readDataFile(SETTINGS_FILE, INITIAL_SETTINGS);
-    const host = process.env.SMTP_HOST || settings.smtpHost || 'smtp.gmail.com';
-    const port = parseInt(process.env.SMTP_PORT || settings.smtpPort || '465', 10);
-    const user = process.env.SMTP_USER || settings.smtpUser || settings.email || 'lunaskinaesthetics24@gmail.com';
-    const pass = process.env.SMTP_PASS || settings.smtpPass || '';
-    const secure = process.env.SMTP_SECURE !== undefined 
-        ? (process.env.SMTP_SECURE === 'true' || process.env.SMTP_SECURE === true)
-        : (settings.smtpSecure !== undefined ? !!settings.smtpSecure : (port === 465));
-
-    if (!user || !pass) {
-        return null;
-    }
-
-    return nodemailer.createTransport({
-        host,
-        port,
-        secure,
-        auth: { user, pass },
-        tls: { rejectUnauthorized: false }
-    });
-}
-
-async function sendEmailNotification({ to, subject, html, text }) {
-    const settings = readDataFile(SETTINGS_FILE, INITIAL_SETTINGS);
-    const fromAddr = process.env.SMTP_FROM || `"${settings.clinicName || 'Luna Skin Aesthetics'}" <${settings.email || 'lunaskinaesthetics24@gmail.com'}>`;
-
-    const transporter = getTransporter();
-    if (!transporter) {
-        console.log(`\n================================================================================`);
-        console.log(`⚠️ [EMAIL SKIPPED - SMTP PASSWORD NOT CONFIGURED]`);
-        console.log(`   To: ${to}`);
-        console.log(`   Subject: ${subject}`);
-        console.log(`   (Add your Gmail App Password or SMTP details in Settings UI or .env to send live emails)`);
-        console.log(`================================================================================\n`);
-        return { sent: false, reason: 'SMTP password not configured in Settings or .env.' };
-    }
-
-    try {
-        const info = await transporter.sendMail({
-            from: fromAddr,
-            to,
-            subject,
-            text,
-            html
-        });
-        console.log(`\n================================================================================`);
-        console.log(`✅ [LIVE EMAIL SENT VIA SMTP] MessageId: ${info.messageId}`);
-        console.log(`   To: ${to}`);
-        console.log(`   Subject: ${subject}`);
-        console.log(`================================================================================\n`);
-        return { sent: true, messageId: info.messageId };
-    } catch (err) {
-        console.error(`\n================================================================================`);
-        console.error(`❌ [SMTP EMAIL DELIVERY ERROR] ${err.message}`);
-        console.error(`================================================================================\n`);
-        return { sent: false, error: err.message };
-    }
-}
 
 const INITIAL_USERS = [
     {
@@ -679,7 +610,7 @@ app.delete('/api/patients/:refId', (req, res) => {
 });
 
 // Patient self-service appointment booking (Patient Portal)
-app.put('/api/patients/:refId/appointment', async (req, res) => {
+app.put('/api/patients/:refId/appointment', (req, res) => {
     const patientsList = readDataFile(PATIENTS_FILE, INITIAL_PATIENTS);
     const refId = req.params.refId;
     const index = patientsList.findIndex(p => p.refId === refId);
@@ -693,9 +624,6 @@ app.put('/api/patients/:refId/appointment', async (req, res) => {
     writeDataFile(PATIENTS_FILE, patientsList);
 
     const patientName = patientsList[index].name;
-    const patientEmail = patientsList[index].email;
-    const settings = readDataFile(SETTINGS_FILE, INITIAL_SETTINGS);
-    const clinicEmail = settings.email || 'lunaskinaesthetics24@gmail.com';
 
     // Simulate SMS notification
     console.log(`\n================================================================================`);
@@ -704,63 +632,33 @@ app.put('/api/patients/:refId/appointment', async (req, res) => {
     console.log(`   Message: "New appointment request by patient ${patientName} on ${date} at ${time} for ${purpose}."`);
     console.log(`================================================================================\n`);
 
+    // Simulate Email notification & Google Calendar Sync log
+    console.log(`================================================================================`);
+    console.log(`✉️ [EMAIL NOTIFICATION SENT]`);
+    console.log(`   To: lunaskinaesthetics24@gmail.com`);
+    console.log(`   Subject: New Patient Appointment Booked - ${patientName}`);
+    console.log(`   Body:`);
+    console.log(`     Dear Luna Skin Aesthetics Team,`);
+    console.log(`     `);
+    console.log(`     A new patient appointment has been scheduled and updated in your calendar.`);
+    console.log(`     - Patient: ${patientName}`);
+    console.log(`     - Date: ${date}`);
+    console.log(`     - Time: ${time}`);
+    console.log(`     - Purpose: ${purpose}`);
+    console.log(`     - Location: 200K/5, Seyad plaza, Tiruchendur main road, palayamkottai, Tirunelveli, Tamil Nadu 627002`);
+    console.log(`     `);
+    console.log(`     Please check your Google Calendar (lunaskinaesthetics24@gmail.com) or Doctor Portal.`);
+    console.log(`================================================================================\n`);
+
     addNotification(`New appointment booked by ${patientName} on ${date} at ${time} (${purpose})`, 'appointment');
     addNotification(`SMS alert sent to Clinic at +91 90256 76090`, 'sms');
-    addNotification(`Email & Calendar update sent to ${clinicEmail}`, 'email');
+    addNotification(`Email & Calendar update sent to lunaskinaesthetics24@gmail.com`, 'email');
 
-    // Send Real Email Notification to Clinic
-    const clinicNotificationHtml = `
-      <div style="font-family:'DM Sans',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#FAF8F5;border-radius:12px;color:#2C3437;">
-        <h2 style="font-family:'Playfair Display',Georgia,serif;color:#5F7D6E;margin-top:0;">✉️ Patient Appointment Booked</h2>
-        <p>A patient has scheduled an appointment via the Patient Portal.</p>
-        <div style="background:#FFFFFF;padding:20px;border-radius:8px;border-left:4px solid #5F7D6E;margin:20px 0;">
-          <p style="margin:6px 0;"><strong>Patient:</strong> ${patientName} (${refId})</p>
-          <p style="margin:6px 0;"><strong>Date:</strong> ${date}</p>
-          <p style="margin:6px 0;"><strong>Time:</strong> ${time || 'TBD'}</p>
-          <p style="margin:6px 0;"><strong>Therapy Purpose:</strong> ${purpose || 'Consultation'}</p>
-        </div>
-      </div>
-    `;
-
-    const emailResult = await sendEmailNotification({
-        to: clinicEmail,
-        subject: `Appointment Scheduled: ${patientName} - ${date}`,
-        text: `New patient appointment scheduled by ${patientName} on ${date} at ${time} for ${purpose}`,
-        html: clinicNotificationHtml
-    });
-
-    if (patientEmail && patientEmail.includes('@')) {
-        const patientConfirmationHtml = `
-          <div style="font-family:'DM Sans',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#FAF8F5;border-radius:12px;color:#2C3437;">
-            <h2 style="font-family:'Playfair Display',Georgia,serif;color:#5F7D6E;margin-top:0;">🌙 Appointment Confirmation</h2>
-            <p>Dear <strong>${patientName}</strong>,</p>
-            <p>Your appointment at <strong>Luna Skin Aesthetics</strong> has been confirmed.</p>
-            <div style="background:#FFFFFF;padding:20px;border-radius:8px;border-left:4px solid #5F7D6E;margin:20px 0;">
-              <p style="margin:6px 0;"><strong>Date:</strong> ${date}</p>
-              <p style="margin:6px 0;"><strong>Time:</strong> ${time || 'TBD'}</p>
-              <p style="margin:6px 0;"><strong>Therapy:</strong> ${purpose || 'Consultation'}</p>
-              <p style="margin:6px 0;"><strong>Location:</strong> 200K/5, Seyad plaza, Tiruchendur main road, Palayamkottai, Tirunelveli, Tamil Nadu 627002</p>
-            </div>
-            <p style="font-size:12px;color:#788489;">We look forward to welcoming you to our studio!</p>
-          </div>
-        `;
-        sendEmailNotification({
-            to: patientEmail,
-            subject: `Appointment Confirmed - Luna Skin Aesthetics (${date})`,
-            text: `Dear ${patientName}, your appointment for ${purpose} on ${date} at ${time} is confirmed.`,
-            html: patientConfirmationHtml
-        }).catch(err => console.error('Patient email dispatch error:', err));
-    }
-
-    res.json({
-        ...patientsList[index],
-        emailSent: emailResult.sent,
-        emailReason: emailResult.reason || emailResult.error || null
-    });
+    res.json(patientsList[index]);
 });
 
 // POST /api/appointments/request — Public landing page booking request
-app.post('/api/appointments/request', async (req, res) => {
+app.post('/api/appointments/request', (req, res) => {
     const { name, phone, email, service, date, message } = req.body;
 
     if (!name || !phone) {
@@ -769,100 +667,27 @@ app.post('/api/appointments/request', async (req, res) => {
 
     const bookingDate = date || new Date().toISOString().slice(0, 10);
     const purpose = service || "Initial Consultation";
-    const settings = readDataFile(SETTINGS_FILE, INITIAL_SETTINGS);
-    const clinicEmail = settings.email || 'lunaskinaesthetics24@gmail.com';
+
+    console.log(`\n================================================================================`);
+    console.log(`📅 [PUBLIC APPOINTMENT REQUEST RECEIVED]`);
+    console.log(`   Patient Name: ${name}`);
+    console.log(`   Phone: ${phone}`);
+    console.log(`   Email: ${email || 'N/A'}`);
+    console.log(`   Service Requested: ${purpose}`);
+    console.log(`   Preferred Date: ${bookingDate}`);
+    console.log(`   Message: ${message || 'None'}`);
+    console.log(`   Target Email: lunaskinaesthetics24@gmail.com`);
+    console.log(`   Target SMS: +91 90256 76090`);
+    console.log(`================================================================================\n`);
 
     addNotification(`Public booking request from ${name} (${phone}) for ${purpose} on ${bookingDate}`, 'appointment');
-    addNotification(`Email notification dispatched to ${clinicEmail}`, 'email');
-
-    // Send HTML Email to Clinic
-    const clinicEmailHtml = `
-      <div style="font-family:'DM Sans',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#FAF8F5;border-radius:12px;color:#2C3437;">
-        <h2 style="font-family:'Playfair Display',Georgia,serif;color:#5F7D6E;margin-top:0;">🌙 New Public Appointment Request</h2>
-        <p>A new appointment request has been submitted from the <strong>Luna Skin Aesthetics</strong> website landing page.</p>
-        <div style="background:#FFFFFF;padding:20px;border-radius:8px;border-left:4px solid #5F7D6E;margin:20px 0;">
-          <p style="margin:6px 0;"><strong>Patient Name:</strong> ${name}</p>
-          <p style="margin:6px 0;"><strong>Phone Number:</strong> ${phone}</p>
-          <p style="margin:6px 0;"><strong>Email:</strong> ${email || 'Not provided'}</p>
-          <p style="margin:6px 0;"><strong>Service Requested:</strong> ${purpose}</p>
-          <p style="margin:6px 0;"><strong>Preferred Date:</strong> ${bookingDate}</p>
-          <p style="margin:6px 0;"><strong>Message:</strong> ${message || 'None'}</p>
-        </div>
-        <p style="font-size:12px;color:#788489;">Please log into the Specialist Portal to manage this appointment.</p>
-      </div>
-    `;
-
-    const emailResult = await sendEmailNotification({
-        to: clinicEmail,
-        subject: `New Booking Request from ${name} - Luna Skin Aesthetics`,
-        text: `New Booking Request from ${name} (${phone}) for ${purpose} on ${bookingDate}. Message: ${message || 'None'}`,
-        html: clinicEmailHtml
-    });
-
-    // Confirmation Email to Client if email provided
-    if (email && email.includes('@')) {
-        const clientEmailHtml = `
-          <div style="font-family:'DM Sans',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#FAF8F5;border-radius:12px;color:#2C3437;">
-            <h2 style="font-family:'Playfair Display',Georgia,serif;color:#5F7D6E;margin-top:0;">🌙 Appointment Request Received</h2>
-            <p>Dear <strong>${name}</strong>,</p>
-            <p>Thank you for reaching out to <strong>Luna Skin Aesthetics</strong>. We have received your request for a <strong>${purpose}</strong> consultation on <strong>${bookingDate}</strong>.</p>
-            <p>Our aesthetic team will review your inquiry within 24 hours and contact you at <strong>${phone}</strong> to confirm your appointment slot.</p>
-            <div style="background:#FFFFFF;padding:16px;border-radius:8px;margin:20px 0;border:1px solid #E2DCD5;">
-              <p style="margin:4px 0;font-size:14px;"><strong>Clinic Location:</strong> 200K/5, Seyad plaza, Tiruchendur main road, Palayamkottai, Tirunelveli, Tamil Nadu 627002</p>
-              <p style="margin:4px 0;font-size:14px;"><strong>Clinic Phone:</strong> +91 90256 76090</p>
-            </div>
-            <p style="font-size:12px;color:#788489;">Warm regards,<br/>Dr. Krithika SK & The Luna Skin Team</p>
-          </div>
-        `;
-        sendEmailNotification({
-            to: email,
-            subject: `We've Received Your Appointment Request - Luna Skin Aesthetics`,
-            text: `Dear ${name}, thank you for requesting an appointment for ${purpose} on ${bookingDate}. We will contact you at ${phone} to confirm your appointment.`,
-            html: clientEmailHtml
-        }).catch(err => console.error('Client email dispatch error:', err));
-    }
+    addNotification(`Email notification dispatched to lunaskinaesthetics24@gmail.com`, 'email');
 
     res.status(201).json({
         success: true,
-        message: `Appointment request submitted! Clinic notified at ${clinicEmail} and ${phone}.`,
-        emailSent: emailResult.sent,
-        emailReason: emailResult.reason || emailResult.error || null,
+        message: `Appointment request submitted! Clinic notified at lunaskinaesthetics24@gmail.com and 9025676090.`,
         booking: { name, phone, email, service: purpose, date: bookingDate, message }
     });
-});
-
-// POST /api/settings/test-email — Test SMTP configuration
-app.post('/api/settings/test-email', async (req, res) => {
-    const { targetEmail } = req.body;
-    const settings = readDataFile(SETTINGS_FILE, INITIAL_SETTINGS);
-    const recipient = targetEmail || settings.email || 'lunaskinaesthetics24@gmail.com';
-
-    const testHtml = `
-      <div style="font-family:'DM Sans',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#FAF8F5;border-radius:12px;color:#2C3437;">
-        <h2 style="font-family:'Playfair Display',Georgia,serif;color:#5F7D6E;margin-top:0;">✅ SMTP Email Configuration Test Successful</h2>
-        <p>This is a verification email sent from your <strong>Luna Skin Aesthetics</strong> platform.</p>
-        <div style="background:#FFFFFF;padding:16px;border-radius:8px;border-left:4px solid #5F7D6E;margin:20px 0;">
-          <p style="margin:4px 0;"><strong>SMTP Host:</strong> ${process.env.SMTP_HOST || settings.smtpHost || 'smtp.gmail.com'}</p>
-          <p style="margin:4px 0;"><strong>SMTP Port:</strong> ${process.env.SMTP_PORT || settings.smtpPort || '465'}</p>
-          <p style="margin:4px 0;"><strong>SMTP User:</strong> ${process.env.SMTP_USER || settings.smtpUser || settings.email}</p>
-          <p style="margin:4px 0;"><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
-        </div>
-        <p style="font-size:12px;color:#788489;">Your email delivery service is correctly configured!</p>
-      </div>
-    `;
-
-    const result = await sendEmailNotification({
-        to: recipient,
-        subject: `SMTP Test Email - Luna Skin Aesthetics (${new Date().toLocaleTimeString()})`,
-        text: `SMTP Email configuration test succeeded! Sent to ${recipient} at ${new Date().toLocaleString()}`,
-        html: testHtml
-    });
-
-    if (result.sent) {
-        res.json({ success: true, message: `Test email sent successfully to ${recipient}!`, messageId: result.messageId });
-    } else {
-        res.status(400).json({ success: false, error: result.error || result.reason || 'Failed to send test email.' });
-    }
 });
 
 // Notifications routes
@@ -993,20 +818,13 @@ try {
     if (localUploads !== UPLOADS_DIR) app.use('/uploads', express.static(localUploads));
 } catch(e) {}
 
-// Serve static assets with dynamic disk reading for live updates
+// Serve pre-cached static assets
 Object.keys(fileCache).forEach(route => {
     const asset = fileCache[route];
     app.get(route, (req, res) => {
-        const filename = route.substring(1);
-        const freshText = readTextAsset(filename);
-        if (freshText) {
-            res.setHeader('Content-Type', asset.mime);
-            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-            return res.send(freshText);
-        }
         if (asset.content) {
             res.setHeader('Content-Type', asset.mime);
-            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Cache-Control', 'public, max-age=3600');
             return res.send(asset.content);
         }
         res.status(404).send(`File not found: ${route}`);
@@ -1022,15 +840,14 @@ app.get('*', (req, res) => {
     }
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-
-    const freshHtml = readTextAsset('index.html');
-    if (freshHtml) {
-        return res.send(freshHtml);
-    }
 
     if (fileCache['/index.html'] && fileCache['/index.html'].content) {
         return res.send(fileCache['/index.html'].content);
+    }
+
+    const html = readTextAsset('index.html');
+    if (html) {
+        return res.send(html);
     }
 
     res.status(500).send(`Server Error: Cannot find index.html in serverless environment.`);

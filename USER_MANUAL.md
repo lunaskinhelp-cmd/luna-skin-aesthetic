@@ -164,18 +164,10 @@ Demonstrates non-invasive clinical results with a drag slider.
 
 ## 5. ⚙️ Clinic Settings & Theme Customization
 
-### 5.1 Clinic Settings & Live Email / SMTP Configuration
+### 5.1 Clinic Settings
 1. Click the **Gear Icon (⚙️)** in the top right of the Specialist Portal.
 2. Edit Clinic Name, Lead Dermatologist, License ID, Address, Phone, or Email.
-3. **Live Email & SMTP Setup (Gmail)**:
-   - **SMTP Host**: `smtp.gmail.com`
-   - **SMTP Port**: `465` (or `587`)
-   - **SMTP Username**: `lunaskinaesthetics24@gmail.com`
-   - **SMTP App Password**: Generate a 16-character App Password from your Google Account Security settings (`myaccount.google.com/apppasswords`) and paste it into the **SMTP App Password** field.
-4. **Testing Email Setup**:
-   - Enter your target email address in **Send Test Email To** and click **Test Email**.
-   - A success notification badge (`✅ SMTP Email Configuration Test Successful`) will verify live email delivery.
-5. Click **Save Settings**.
+3. Click **Save Settings**.
 
 ### 5.2 Aesthetic Theme Switcher
 Click the **Moon/Sun Icon (🌙/☀️)** to switch between **Luminous Light Mode** and **Sleek Dark Mode**.

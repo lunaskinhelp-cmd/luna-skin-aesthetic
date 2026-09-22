@@ -14,7 +14,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="style.css?v=3"/>
+    <link rel="stylesheet" href="style.css"/>
     <script>
         (function() {
             const savedTheme = localStorage.getItem('clinical-theme') || 'light';
@@ -58,87 +58,87 @@
     </nav>
 
     <!-- ── Hero Section ── -->
-    <section class="hero-section" id="hero-section" style="background: linear-gradient(135deg, #6B1717 0%, #751B1B 50%, #5E1414 100%) !important; color: #FFFFFF !important;">
+    <section class="hero-section" id="hero-section">
         <div class="hero-bg-overlay"></div>
         <div class="hero-particles" id="hero-particles"></div>
 
         <div class="hero-content">
-            <span class="hero-eyebrow" style="color:#D48439 !important; border:1px solid rgba(212,132,57,0.4) !important; background:rgba(212,132,57,0.12) !important;">Clinical Cosmetology · Skin Studio</span>
-            <h1 class="hero-headline" style="color:#FFFFFF !important;">Radiant Skin & Hair.<br/>Non-Invasive Excellence.</h1>
-            <p class="hero-subtext" style="color:rgba(255,255,255,0.88) !important;">Experience premier non-invasive clinical cosmetology — where cutting-edge skin science meets studio artistry. Delivering advanced HydraFacial, peels, and SPMU with zero downtime.</p>
+            <span class="hero-eyebrow">Clinical Cosmetology · Skin Studio</span>
+            <h1 class="hero-headline">Radiant Skin & Hair.<br/>Non-Invasive Excellence.</h1>
+            <p class="hero-subtext">Experience premier non-invasive clinical cosmetology — where cutting-edge skin science meets studio artistry. Delivering advanced HydraFacial, peels, and SPMU with zero downtime.</p>
             <div class="hero-actions">
-                <button class="btn-hero-primary" onclick="document.getElementById('booking-section').scrollIntoView({behavior:'smooth'})" style="background:linear-gradient(135deg, #C56000 0%, #D4680E 100%) !important; color:#FFFFFF !important; border:1px solid #B45309 !important; box-shadow:0 6px 20px rgba(197,96,0,0.4) !important;">
+                <button class="btn-hero-primary" onclick="document.getElementById('booking-section').scrollIntoView({behavior:'smooth'})">
                     Book Your Consultation
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </button>
-                <button class="btn-hero-ghost" onclick="showPage('auth'); setAuthRole('patient'); setAuthTab('register')" style="color:#FFFFFF !important; border:1px solid rgba(255,255,255,0.4) !important;">
+                <button class="btn-hero-ghost" onclick="showPage('auth'); setAuthRole('patient'); setAuthTab('register')">
                     New Client Registration
                 </button>
             </div>
             <div class="hero-stats">
                 <div class="hero-stat">
-                    <span class="hero-stat-num" style="color:#D48439 !important;">3,200+</span>
-                    <span class="hero-stat-label" style="color:rgba(255,255,255,0.75) !important;">Clients Cared For</span>
+                    <span class="hero-stat-num">3,200+</span>
+                    <span class="hero-stat-label">Clients Cared For</span>
                 </div>
-                <div class="hero-stat-divider" style="background:rgba(255,255,255,0.2) !important;"></div>
+                <div class="hero-stat-divider"></div>
                 <div class="hero-stat">
-                    <span class="hero-stat-num" style="color:#D48439 !important;">8</span>
-                    <span class="hero-stat-label" style="color:rgba(255,255,255,0.75) !important;">Non-Invasive Therapies</span>
+                    <span class="hero-stat-num">8</span>
+                    <span class="hero-stat-label">Non-Invasive Therapies</span>
                 </div>
-                <div class="hero-stat-divider" style="background:rgba(255,255,255,0.2) !important;"></div>
+                <div class="hero-stat-divider"></div>
                 <div class="hero-stat">
-                    <span class="hero-stat-num" style="color:#D48439 !important;">99%</span>
-                    <span class="hero-stat-label" style="color:rgba(255,255,255,0.75) !important;">Satisfaction Rate</span>
+                    <span class="hero-stat-num">99%</span>
+                    <span class="hero-stat-label">Satisfaction Rate</span>
                 </div>
             </div>
         </div>
 
         <div class="hero-image-panel">
-            <div class="hero-float-card card-1" style="background:#FFFFFF !important; color:#2A2624 !important;">
-                <span class="material-symbols-outlined" style="color:#C56000 !important;">star</span>
+            <div class="hero-float-card card-1">
+                <span class="material-symbols-outlined" style="color:var(--color-tertiary)">star</span>
                 <div>
-                    <p style="font-weight:700;font-size:13px;color:#2A2624 !important;">4.9/5 Rating</p>
-                    <p style="font-size:11px;color:#5C4E48 !important;">1,200+ Reviews</p>
+                    <p style="font-weight:700;font-size:13px;">4.9/5 Rating</p>
+                    <p style="font-size:11px;opacity:0.7;">1,200+ Reviews</p>
                 </div>
             </div>
-            <div class="hero-float-card card-2" style="background:#FFFFFF !important; color:#2A2624 !important;">
-                <span class="material-symbols-outlined" style="color:#701A1A !important;">medical_services</span>
+            <div class="hero-float-card card-2">
+                <span class="material-symbols-outlined" style="color:var(--color-primary)">medical_services</span>
                 <div>
-                    <p style="font-weight:700;font-size:13px;color:#2A2624 !important;">Expert Consultation</p>
-                    <p style="font-size:11px;color:#5C4E48 !important;">Personalized Skin Care</p>
+                    <p style="font-weight:700;font-size:13px;">Expert Consultation</p>
+                    <p style="font-size:11px;opacity:0.7;">Personalized Skin Care</p>
                 </div>
             </div>
-            <div class="hero-float-card card-3" style="background:#FFFFFF !important; color:#2A2624 !important;">
-                <span class="material-symbols-outlined" style="color:#C56000 !important;">verified_user</span>
+            <div class="hero-float-card card-3">
+                <span class="material-symbols-outlined" style="color:var(--color-tertiary)">verified_user</span>
                 <div>
-                    <p style="font-weight:700;font-size:13px;color:#2A2624 !important;">100% Non-Invasive</p>
-                    <p style="font-size:11px;color:#5C4E48 !important;">Clinical Protocols</p>
+                    <p style="font-weight:700;font-size:13px;">100% Non-Invasive</p>
+                    <p style="font-size:11px;opacity:0.7;">Clinical Protocols</p>
                 </div>
             </div>
-            <div class="hero-float-card card-4" style="background:#FFFFFF !important; color:#2A2624 !important;">
-                <span class="material-symbols-outlined" style="color:#701A1A !important;">workspace_premium</span>
+            <div class="hero-float-card card-4">
+                <span class="material-symbols-outlined" style="color:var(--color-primary)">workspace_premium</span>
                 <div>
-                    <p style="font-weight:700;font-size:13px;color:#2A2624 !important;">Licensed Studio</p>
-                    <p style="font-size:11px;color:#5C4E48 !important;">DHA/DOH Certified</p>
+                    <p style="font-weight:700;font-size:13px;">Licensed Studio</p>
+                    <p style="font-size:11px;opacity:0.7;">DHA/DOH Certified</p>
                 </div>
             </div>
-            <div class="hero-center-circle" style="border-color:rgba(255,255,255,0.15) !important;">
-                <svg viewBox="0 0 200 200" style="width:120px;height:120px;opacity:0.35;">
-                    <circle cx="100" cy="100" r="92" stroke="#D48439" stroke-width="1.5" fill="none"/>
-                    <g fill="#D48439" transform="translate(9,22)">
+            <div class="hero-center-circle">
+                <svg viewBox="0 0 200 200" style="width:120px;height:120px;opacity:0.25;">
+                    <circle cx="100" cy="100" r="92" stroke="var(--color-primary)" stroke-width="1.5" fill="none"/>
+                    <g fill="var(--color-primary)" transform="translate(9,22)">
                         <path d="M 92,30 A 45,45 0 0,0 92,120 C 100,120 106,115 106,108 C 106,104 96,102 96,98 C 96,96 94,95 97,93 C 100,91 99,89 97,87 C 94,86 93,85 91,83 C 88,81 86,79 97,76 C 94,71 91,58 106,46 C 112,41 106,32 92,30 Z"/>
                     </g>
                 </svg>
             </div>
         </div>
 
-        <div class="hero-scroll-indicator" style="color:#D48439 !important;">
+        <div class="hero-scroll-indicator">
             <span class="material-symbols-outlined" style="animation: bounceDown 1.5s infinite;">keyboard_arrow_down</span>
         </div>
     </section>
 
     <!-- ── Services Section ── -->
-    <section class="landing-section services-section" id="services-section" style="background: #611616 !important; color: #FFFFFF !important;">
+    <section class="landing-section services-section" id="services-section">
         <div class="landing-container">
             <div class="section-header">
                 <span class="section-eyebrow">Skin Studio Therapies</span>
@@ -232,7 +232,7 @@
     </section>
 
     <!-- ── About Section ── -->
-    <section class="landing-section about-section" id="about-section" style="background: #6B1717 !important; color: #FFFFFF !important;">
+    <section class="landing-section about-section" id="about-section">
         <div class="landing-container">
             <div class="about-grid">
                 <div class="about-content">
@@ -270,11 +270,11 @@
                 </div>
 
                 <div class="about-image-wrap">
-                    <div class="case-card" style="padding:40px;text-align:center;background:#FFFFFF !important;border-radius:12px;">
+                    <div class="case-card" style="padding:40px;text-align:center;background:var(--color-surface-container-low);border-radius:12px;">
                         <img src="logo.png" alt="Luna Skin Aesthetics Logo" style="width:110px;height:110px;object-fit:contain;margin:0 auto 20px;border-radius:50%;box-shadow:0 4px 16px rgba(0,0,0,0.1);"/>
-                        <h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#701A1A !important;">Luna Skin Aesthetics</h3>
-                        <p style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#C56000 !important;margin-top:6px;font-weight:700;">Clinical Cosmetology · Skin Studio</p>
-                        <p style="font-size:13px;color:#4A3E39 !important;margin-top:16px;line-height:1.6;">Where science meets skin & hair perfection through 100% non-invasive clinical artistry.</p>
+                        <h3 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--color-primary);">Luna Skin Aesthetics</h3>
+                        <p style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-secondary);margin-top:6px;">Clinical Cosmetology · Skin Studio</p>
+                        <p style="font-size:13px;opacity:0.8;margin-top:16px;line-height:1.6;">Where science meets skin & hair perfection through 100% non-invasive clinical artistry.</p>
                     </div>
                 </div>
             </div>
@@ -282,7 +282,7 @@
     </section>
 
     <!-- ── Skin & Hair Assessor Section ── -->
-    <section class="landing-section assessor-section" id="assessor-section" style="background: #5A1313 !important; color: #FFFFFF !important; transition: background-color var(--transition-speed) var(--transition-ease);">
+    <section class="landing-section assessor-section" id="assessor-section" style="background: var(--color-surface-container-low); transition: background-color var(--transition-speed) var(--transition-ease);">
         <div class="landing-container" style="max-width: 800px;">
             <div class="section-header" style="margin-bottom: 40px;">
                 <span class="section-eyebrow">Interactive Consultation</span>
@@ -298,24 +298,24 @@
 
                 <!-- Step 1 -->
                 <div id="assessor-step-1" class="assessor-step active">
-                    <h3 style="font-family: var(--font-serif); font-size: 24px; margin-bottom: 24px; color: #701A1A; text-align: center;">1. What is your primary area of concern?</h3>
+                    <h3 style="font-family: var(--font-serif); font-size: 24px; margin-bottom: 24px; color: var(--color-primary); text-align: center;">1. What is your primary area of concern?</h3>
                     <div class="assessor-options-grid">
                         <button class="assessor-opt-btn" onclick="selectAssessorOption(1, 'face', 'Face & Skin Tone')">
-                            <span class="material-symbols-outlined" style="font-size: 32px; color: #C56000;">face</span>
+                            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-primary);">face</span>
                             <div>
                                 <p style="font-weight: 700; font-size: 15px;">Face & Skin Tone</p>
                                 <p style="font-size: 12px; opacity: 0.7; margin-top: 2px;">Hyperpigmentation, texture, scars, or hydration</p>
                             </div>
                         </button>
                         <button class="assessor-opt-btn" onclick="selectAssessorOption(1, 'hair', 'Hair & Scalp')">
-                            <span class="material-symbols-outlined" style="font-size: 32px; color: #C56000;">spa</span>
+                            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-primary);">spa</span>
                             <div>
                                 <p style="font-weight: 700; font-size: 15px;">Hair & Scalp</p>
                                 <p style="font-size: 12px; opacity: 0.7; margin-top: 2px;">Thinning, hair regrowth, dandruff, or extensions</p>
                             </div>
                         </button>
                         <button class="assessor-opt-btn" onclick="selectAssessorOption(1, 'makeup', 'Semi-Permanent Artistry')">
-                            <span class="material-symbols-outlined" style="font-size: 32px; color: #C56000;">brush</span>
+                            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--color-primary);">brush</span>
                             <div>
                                 <p style="font-weight: 700; font-size: 15px;">Semi-Permanent Artistry</p>
                                 <p style="font-size: 12px; opacity: 0.7; margin-top: 2px;">SPMU eyebrows shaping or lip blush contour</p>
@@ -326,7 +326,7 @@
 
                 <!-- Step 2 -->
                 <div id="assessor-step-2" class="assessor-step" style="display: none;">
-                    <h3 id="assessor-q2" style="font-family: var(--font-serif); font-size: 24px; margin-bottom: 24px; color: #701A1A; text-align: center;">2. Select your specific sub-category:</h3>
+                    <h3 id="assessor-q2" style="font-family: var(--font-serif); font-size: 24px; margin-bottom: 24px; color: var(--color-primary); text-align: center;">2. Select your specific sub-category:</h3>
                     <div id="assessor-options-q2" class="assessor-options-grid">
                         <!-- Populated dynamically via JS -->
                     </div>
@@ -338,8 +338,8 @@
                 <!-- Step 3 (Results) -->
                 <div id="assessor-step-3" class="assessor-step" style="display: none;">
                     <div style="text-align: center; padding: 20px 0;">
-                        <span class="material-symbols-outlined" style="font-size: 64px; color: #701A1A; margin-bottom: 16px;">verified</span>
-                        <h3 style="font-family: var(--font-serif); font-size: 28px; margin-bottom: 12px; color: #701A1A;">Recommended Therapy</h3>
+                        <span class="material-symbols-outlined" style="font-size: 64px; color: var(--color-primary); margin-bottom: 16px;">verified</span>
+                        <h3 style="font-family: var(--font-serif); font-size: 28px; margin-bottom: 12px; color: var(--color-primary);">Recommended Therapy</h3>
                         <div id="assessor-recommendation-box">
                             <!-- Recommended treatment populated dynamically -->
                         </div>
@@ -354,7 +354,7 @@
     </section>
 
     <!-- ── Booking Section ── -->
-    <section class="landing-section booking-section" id="booking-section" style="background: linear-gradient(135deg, #6B1717 0%, #751B1B 50%, #5B1313 100%) !important; color: #FFFFFF !important;">
+    <section class="landing-section booking-section" id="booking-section">
         <div class="landing-container">
             <div class="booking-grid">
                 <div class="booking-info">
@@ -427,7 +427,7 @@
     </section>
 
     <!-- ── Landing Footer ── -->
-    <footer class="landing-footer" style="background: #3B0C0C !important; color: rgba(255,255,255,0.7) !important;">
+    <footer class="landing-footer">
         <div class="landing-container">
             <div class="footer-top">
                 <div class="footer-brand">
@@ -1769,13 +1769,12 @@
 
 <!-- MODAL: Settings -->
 <div class="modal-overlay" id="settings-modal">
-    <div class="modal-content" style="max-width:550px;">
+    <div class="modal-content">
         <div class="modal-header">
-            <h3 class="font-headline-md text-primary" style="font-size:18px;">Portal & Email Settings</h3>
+            <h3 class="font-headline-md text-primary" style="font-size:18px;">Portal Settings</h3>
             <span class="material-symbols-outlined modal-close" id="close-settings-modal-btn">close</span>
         </div>
-        <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;max-height:70vh;overflow-y:auto;">
-            <h4 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-primary);margin-bottom:2px;">Clinic Information</h4>
+        <div class="modal-body">
             <div class="form-group">
                 <label class="label-clinical">Center Name</label>
                 <input class="input-clinical font-body-md" id="setting-clinic-name" type="text"/>
@@ -1787,59 +1786,6 @@
             <div class="form-group">
                 <label class="label-clinical">License ID</label>
                 <input class="input-clinical font-body-md" id="setting-license" type="text"/>
-            </div>
-            <div class="form-group">
-                <label class="label-clinical">Clinic Email</label>
-                <input class="input-clinical font-body-md" id="setting-email" type="email"/>
-            </div>
-            <div class="form-group">
-                <label class="label-clinical">Clinic Phone</label>
-                <input class="input-clinical font-body-md" id="setting-phone" type="tel"/>
-            </div>
-            <div class="form-group">
-                <label class="label-clinical">Clinic Address</label>
-                <input class="input-clinical font-body-md" id="setting-address" type="text"/>
-            </div>
-
-            <hr style="border:none;border-top:1px solid var(--color-outline-variant);margin:8px 0;"/>
-
-            <h4 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-primary);margin-bottom:2px;">✉️ Live Email & SMTP Delivery Configuration</h4>
-            <p style="font-size:12px;opacity:0.8;margin-bottom:8px;line-height:1.5;">To send live emails when clients submit form requests or book appointments, enter your SMTP server details or <strong>Gmail App Password</strong> below.</p>
-
-            <div class="grid-2" style="gap:12px;">
-                <div class="form-group">
-                    <label class="label-clinical">SMTP Host</label>
-                    <input class="input-clinical font-body-md" id="setting-smtp-host" type="text" placeholder="smtp.gmail.com"/>
-                </div>
-                <div class="form-group">
-                    <label class="label-clinical">SMTP Port</label>
-                    <input class="input-clinical font-body-md" id="setting-smtp-port" type="text" placeholder="465"/>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="label-clinical">SMTP Username / Email</label>
-                <input class="input-clinical font-body-md" id="setting-smtp-user" type="email" placeholder="lunaskinaesthetics24@gmail.com"/>
-            </div>
-            <div class="form-group">
-                <label class="label-clinical">SMTP App Password</label>
-                <div style="position:relative;">
-                    <input class="input-clinical font-body-md" id="setting-smtp-pass" type="password" placeholder="16-character App Password" style="padding-right:36px;"/>
-                    <button type="button" class="password-toggle-btn" id="smtp-pwd-toggle" title="Show/Hide App Password" onclick="togglePasswordVisibility('setting-smtp-pass','smtp-pwd-toggle')" style="top:50%;transform:translateY(-50%);">
-                        <span class="material-symbols-outlined" style="font-size:18px;">visibility</span>
-                    </button>
-                </div>
-                <p style="font-size:11px;opacity:0.7;margin-top:4px;">For Gmail: Generate a 16-character App Password under your Google Account Security settings.</p>
-            </div>
-
-            <div style="background:var(--color-surface-container-low);padding:12px;border-radius:8px;border:1px solid var(--color-outline-variant);margin-top:4px;">
-                <label class="label-clinical" style="margin-bottom:6px;">Send Test Email To</label>
-                <div style="display:flex;gap:8px;">
-                    <input class="input-clinical font-body-md" id="setting-test-email-target" type="email" placeholder="lunaskinaesthetics24@gmail.com" style="flex:1;"/>
-                    <button type="button" class="btn-secondary" id="test-email-btn" style="white-space:nowrap;padding:8px 14px;">
-                        <span class="material-symbols-outlined" style="font-size:16px;">send</span>
-                        Test Email
-                    </button>
-                </div>
             </div>
         </div>
         <div class="modal-footer">
