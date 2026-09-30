@@ -13,6 +13,7 @@ const path = require('path');
 const os = require('os');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,9 +26,86 @@ const pool = new Pool({
     connectionTimeoutMillis: 10000,
 });
 
+// SMTP email transporter
+const mailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+});
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+
+
+// ─── Appointment Email Helper ─────────────────────────────────
+async function sendAppointmentEmail({
+    to,
+    subject,
+    patientName,
+    patientPhone,
+    patientEmail,
+    date,
+    time,
+    purpose,
+    message = '',
+    action = 'Appointment Scheduled'
+}) {
+    if (!to) {
+        console.log('📧 Email skipped: no recipient email address.');
+        return { sent: false, skipped: true };
+    }
+
+    const mailOptions = {
+        from: `"Luna Skin Aesthetic" <${process.env.SMTP_USER}>`,
+        to,
+        subject,
+        text: `
+Luna Skin Aesthetic
+Appointment Notification
+
+${action}
+
+Patient Name: ${patientName || 'N/A'}
+Phone: ${patientPhone || 'N/A'}
+Patient Email: ${patientEmail || 'N/A'}
+
+Appointment Date: ${date || 'Not specified'}
+Appointment Time: ${time || 'Not specified'}
+Service / Purpose: ${purpose || 'Consultation'}
+
+${message ? `Message: ${message}` : ''}
+
+Regards,
+Luna Skin Aesthetic
+Tirunelveli
+        `.trim()
+    };
+
+    try {
+        const info = await mailTransporter.sendMail(mailOptions);
+
+        console.log(
+            `📧 Appointment email sent to ${to} | Message ID: ${info.messageId}`
+        );
+
+        return {
+            sent: true,
+            messageId: info.messageId
+        };
+
+    } catch (error) {
+        console.error(`❌ Failed to send appointment email to ${to}:`, error);
+
+        return {
+            sent: false,
+            error: error.message
+        };
+    }
+}
 
 // Dynamic writable directory setup (safe for Vercel / serverless read-only filesystems)
 function getWritableDir(dirName) {
@@ -926,6 +1004,30 @@ app.post('/api/auth/register', async (req, res) => {
         );
 
         await client.query('COMMIT');
+        // Send appointment notification to the patient after the database update succeeds
+let emailResult = null;
+
+if (appointmentAction && email) {
+    emailResult = await sendAppointmentEmail({
+        to: email,
+        subject: `${appointmentAction} - Luna Skin Aesthetic`,
+        patientName: name,
+        patientPhone: contact,
+        patientEmail: email,
+        date: appointment.date,
+        time: appointment.time || 'Not specified',
+        purpose: appointment.purpose || 'Consultation',
+        message: previousAppointment
+            ? `Previous appointment: ${previousAppointment.appointment_date} at ${previousAppointment.appointment_time || 'Not specified'} (${previousAppointment.purpose || 'Consultation'})`
+            : '',
+        action: appointmentAction
+    });
+
+    console.log(
+        `📧 Doctor appointment email result for ${email}:`,
+        emailResult
+    );
+} 
 
         // Return the same structure expected by the frontend
         const patientRecord = {
@@ -1861,113 +1963,74 @@ app.put('/api/patients/:refId', async (req, res) => {
             );
         }
 
+
+        let appointmentAction = null;
+        let previousAppointment = null;
         // Update the patient's existing appointment when supplied
         if (appointment !== null && appointment.date) {
             const latestAppointmentResult = await client.query(
-                `
-                SELECT id
-                FROM appointments
-                WHERE patient_ref = $1
-                ORDER BY created_at DESC, id DESC
-                LIMIT 1
-                `,
-                [refId]
-            );
+    `
+    SELECT
+        id,
+        TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
+        appointment_time,
+        purpose
+    FROM appointments
+    WHERE patient_ref = $1
+    ORDER BY created_at DESC, id DESC
+    LIMIT 1
+    `,
+    [refId]
+);
 
-            if (latestAppointmentResult.rows.length > 0) {
-                // Reschedule: update the existing/latest appointment
-                await client.query(
-                    `
-                    UPDATE appointments
-                    SET
-                        appointment_date = $1,
-                        appointment_time = $2,
-                        purpose = $3
-                    WHERE id = $4
-                    `,
-                    [
-                        appointment.date,
-                        appointment.time || "",
-                        appointment.purpose || "Consultation",
-                        latestAppointmentResult.rows[0].id
-                    ]
-                );
-            } else {
-                // No appointment exists yet: create one
-                await client.query(
-                    `
-                    INSERT INTO appointments (
-                        patient_ref,
-                        appointment_date,
-                        appointment_time,
-                        purpose
-                    )
-                    VALUES ($1, $2, $3, $4)
-                    `,
-                    [
-                        refId,
-                        appointment.date,
-                        appointment.time || "",
-                        appointment.purpose || "Consultation"
-                    ]
-                );
-            }
+if (latestAppointmentResult.rows.length > 0) {
+    // Reschedule: update the existing/latest appointment
+    previousAppointment = latestAppointmentResult.rows[0];
+    appointmentAction = 'Appointment Rescheduled';
+
+    await client.query(
+        `
+        UPDATE appointments
+        SET
+            appointment_date = $1,
+            appointment_time = $2,
+            purpose = $3
+        WHERE id = $4
+        `,
+        [
+            appointment.date,
+            appointment.time || "",
+            appointment.purpose || "Consultation",
+            previousAppointment.id
+        ]
+    );
+} else {
+    // No appointment exists yet: create one
+    appointmentAction = 'New Appointment';
+
+    await client.query(
+        `
+        INSERT INTO appointments (
+            patient_ref,
+            appointment_date,
+            appointment_time,
+            purpose
+        )
+        VALUES ($1, $2, $3, $4)
+        `,
+        [
+            refId,
+            appointment.date,
+            appointment.time || "",
+            appointment.purpose || "Consultation"
+        ]
+    );
+}
         }
 
         await client.query('COMMIT');
 
-        // Update the latest appointment when supplied
-// if (appointment !== null && appointment.date) {
-//     const latestAppointmentResult = await client.query(
-//         `
-//         SELECT id
-//         FROM appointments
-//         WHERE patient_ref = $1
-//         ORDER BY created_at DESC
-//         LIMIT 1
-//         `,
-//         [refId]
-//     );
 
-//     if (latestAppointmentResult.rows.length > 0) {
-//         await client.query(
-//             `
-//             UPDATE appointments
-//             SET
-//                 appointment_date = $1,
-//                 appointment_time = $2,
-//                 purpose = $3
-//             WHERE id = $4
-//             `,
-//             [
-//                 appointment.date,
-//                 appointment.time || "",
-//                 appointment.purpose || "Consultation",
-//                 latestAppointmentResult.rows[0].id
-//             ]
-//         );
-//     } else {
-//         await client.query(
-//             `
-//             INSERT INTO appointments (
-//                 patient_ref,
-//                 appointment_date,
-//                 appointment_time,
-//                 purpose
-//             )
-//             VALUES ($1, $2, $3, $4)
-//             `,
-//             [
-//                 refId,
-//                 appointment.date,
-//                 appointment.time || "",
-//                 appointment.purpose || "Consultation"
-//             ]
-//         );
-//     }
-// }
-
-//         await client.query('COMMIT');
 
         // Return the same frontend-friendly structure used by GET /api/patients
         const proceduresResult = await pool.query(
@@ -2012,15 +2075,19 @@ app.put('/api/patients/:refId', async (req, res) => {
             `,
             [refId]
         );
-
         const appointmentResult = await pool.query(
             `
-            SELECT appointment_date, appointment_time, purpose
+            SELECT
+            TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
+            appointment_time,
+            purpose
             FROM appointments
             WHERE patient_ref = $1
             ORDER BY created_at DESC
+    
             LIMIT 1
             `,
+    
             [refId]
         );
 
@@ -2341,68 +2408,95 @@ app.put('/api/patients/:refId/appointment', async (req, res) => {
 
         const patient = patientResult.rows[0];
 
-        // // Save appointment in PostgreSQL
-        // await pool.query(
-        //     `
-        //     INSERT INTO appointments (
-        //         patient_ref,
-        //         appointment_date,
-        //         appointment_time,
-        //         purpose
-        //     )
-        //     VALUES ($1, $2, $3, $4)
-        //     `,
-        //     [refId, date, time, purpose]
-        // );
-        // Save appointment in PostgreSQL.
-// If the patient already has an appointment, update the latest one.
-// Otherwise create a new appointment.
-const existingAppointmentResult = await pool.query(
-    `
-    SELECT id
-    FROM appointments
-    WHERE patient_ref = $1
-    ORDER BY created_at DESC, id DESC
-    LIMIT 1
-    `,
-    [refId]
-);
+        const existingAppointmentResult = await pool.query(
+            `
+            SELECT
+                id,
+                TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
+                appointment_time,
+                purpose
+            FROM appointments
+            WHERE patient_ref = $1
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+            `,
+            [refId]
+        );
 
-if (existingAppointmentResult.rows.length > 0) {
-    await pool.query(
-        `
-        UPDATE appointments
-        SET
-            appointment_date = $1,
-            appointment_time = $2,
-            purpose = $3
-        WHERE id = $4
-        `,
-        [
-            date,
-            time,
-            purpose,
-            existingAppointmentResult.rows[0].id
-        ]
-    );
+        let appointmentAction = 'New Appointment';
 
-    console.log(`📅 [APPOINTMENT UPDATED] ${patient.name} → ${date} ${time}`);
-} else {
-    await pool.query(
-        `
-        INSERT INTO appointments (
-            patient_ref,
-            appointment_date,
-            appointment_time,
-            purpose
-        )
-        VALUES ($1, $2, $3, $4)
-        `,
-        [refId, date, time, purpose]
-    );
+        if (existingAppointmentResult.rows.length > 0) {
+            const previousAppointment =
+                existingAppointmentResult.rows[0];
 
-    console.log(`📅 [APPOINTMENT CREATED] ${patient.name} → ${date} ${time}`);
-}
+            appointmentAction = 'Appointment Rescheduled';
+
+            await pool.query(
+                `
+                UPDATE appointments
+                SET
+                    appointment_date = $1,
+                    appointment_time = $2,
+                    purpose = $3
+                WHERE id = $4
+                `,
+                [
+                    date,
+                    time,
+                    purpose,
+                    previousAppointment.id
+                ]
+            );
+
+            console.log(
+                `📅 [APPOINTMENT RESCHEDULED] ${patient.name} → ${date} ${time}`
+            );
+
+            await sendAppointmentEmail({
+                to: process.env.SMTP_USER,
+                subject: `Appointment Rescheduled - ${patient.name}`,
+                patientName: patient.name,
+                patientPhone: patient.contact,
+                patientEmail: patient.email,
+                date,
+                time,
+                purpose,
+                message:
+                    `Previous appointment: ${previousAppointment.appointment_date} at ${previousAppointment.appointment_time || 'Not specified'}`
+                    + ` (${previousAppointment.purpose || 'Consultation'})`,
+                action: appointmentAction
+            });
+
+        } else {
+            await pool.query(
+                `
+                INSERT INTO appointments (
+                    patient_ref,
+                    appointment_date,
+                    appointment_time,
+                    purpose
+                )
+                VALUES ($1, $2, $3, $4)
+                `,
+                [refId, date, time, purpose]
+            );
+
+            console.log(
+                `📅 [APPOINTMENT CREATED] ${patient.name} → ${date} ${time}`
+            );
+
+            await sendAppointmentEmail({
+                to: process.env.SMTP_USER,
+                subject: `New Appointment - ${patient.name}`,
+                patientName: patient.name,
+                patientPhone: patient.contact,
+                patientEmail: patient.email,
+                date,
+                time,
+                purpose,
+                action: appointmentAction
+            });
+        }
 
         console.log(`\n================================================================================`);
         console.log(`📅 [APPOINTMENT BOOKED]`);
@@ -2478,38 +2572,158 @@ if (existingAppointmentResult.rows.length > 0) {
 });
 
 // POST /api/appointments/request — Public landing page booking request
-app.post('/api/appointments/request', (req, res) => {
-    const { name, phone, email, service, date, message } = req.body;
+// app.post('/api/appointments/request', (req, res) => {
+//     const { name, phone, email, service, date, message } = req.body;
+
+//     if (!name || !phone) {
+//         return res.status(400).json({ error: "Name and phone number are required." });
+//     }
+
+//     const bookingDate = date || new Date().toISOString().slice(0, 10);
+//     const purpose = service || "Initial Consultation";
+
+//     console.log(`\n================================================================================`);
+//     console.log(`📅 [PUBLIC APPOINTMENT REQUEST RECEIVED]`);
+//     console.log(`   Patient Name: ${name}`);
+//     console.log(`   Phone: ${phone}`);
+//     console.log(`   Email: ${email || 'N/A'}`);
+//     console.log(`   Service Requested: ${purpose}`);
+//     console.log(`   Preferred Date: ${bookingDate}`);
+//     console.log(`   Message: ${message || 'None'}`);
+//     console.log(`   Target Email: lunaskinaesthetics24@gmail.com`);
+//     console.log(`   Target SMS: +91 90256 76090`);
+//     console.log(`================================================================================\n`);
+
+//     addNotification(`Public booking request from ${name} (${phone}) for ${purpose} on ${bookingDate}`, 'appointment');
+//     addNotification(`Email notification dispatched to lunaskinaesthetics24@gmail.com`, 'email');
+
+//     res.status(201).json({
+//         success: true,
+//         message: `Appointment request submitted! Clinic notified at lunaskinaesthetics24@gmail.com and 9025676090.`,
+//         booking: { name, phone, email, service: purpose, date: bookingDate, message }
+//     });
+// });
+// POST /api/appointments/request — Public landing page booking request
+// POST /api/appointments/request — Public landing page booking request
+
+app.post('/api/appointments/request', async (req, res) => {
+    const {
+        name,
+        phone,
+        email,
+        service,
+        date,
+        message
+    } = req.body;
 
     if (!name || !phone) {
-        return res.status(400).json({ error: "Name and phone number are required." });
+        return res.status(400).json({
+            error: "Name and phone number are required."
+        });
     }
 
-    const bookingDate = date || new Date().toISOString().slice(0, 10);
-    const purpose = service || "Initial Consultation";
+    const bookingDate =
+        date || new Date().toISOString().slice(0, 10);
 
-    console.log(`\n================================================================================`);
-    console.log(`📅 [PUBLIC APPOINTMENT REQUEST RECEIVED]`);
-    console.log(`   Patient Name: ${name}`);
-    console.log(`   Phone: ${phone}`);
-    console.log(`   Email: ${email || 'N/A'}`);
-    console.log(`   Service Requested: ${purpose}`);
-    console.log(`   Preferred Date: ${bookingDate}`);
-    console.log(`   Message: ${message || 'None'}`);
-    console.log(`   Target Email: lunaskinaesthetics24@gmail.com`);
-    console.log(`   Target SMS: +91 90256 76090`);
-    console.log(`================================================================================\n`);
+    const purpose =
+        service || "Initial Consultation";
 
-    addNotification(`Public booking request from ${name} (${phone}) for ${purpose} on ${bookingDate}`, 'appointment');
-    addNotification(`Email notification dispatched to lunaskinaesthetics24@gmail.com`, 'email');
+    try {
+        // Save public booking to PostgreSQL.
+        const appointmentResult = await pool.query(
+            `
+            INSERT INTO appointments (
+                name,
+                phone,
+                email,
+                service,
+                appointment_date,
+                appointment_time,
+                purpose,
+                message,
+                status
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            RETURNING
+                id,
+                name,
+                phone,
+                email,
+                service,
+                appointment_date,
+                appointment_time,
+                purpose,
+                message,
+                status
+            `,
+            [
+                name.trim(),
+                phone.trim(),
+                email ? email.trim() : null,
+                service || null,
+                bookingDate,
+                null,
+                purpose,
+                message ? message.trim() : null,
+                'Pending'
+            ]
+        );
 
-    res.status(201).json({
-        success: true,
-        message: `Appointment request submitted! Clinic notified at lunaskinaesthetics24@gmail.com and 9025676090.`,
-        booking: { name, phone, email, service: purpose, date: bookingDate, message }
-    });
+        const appointment = appointmentResult.rows[0];
+
+        console.log(
+            `📅 [PUBLIC APPOINTMENT SAVED] ${name} → ${bookingDate}`
+        );
+
+        // Send appointment request email to the clinic/doctor.
+        const emailResult = await sendAppointmentEmail({
+            to: process.env.SMTP_USER,
+            subject: `New Appointment Request - ${name}`,
+            patientName: name,
+            patientPhone: phone,
+            patientEmail: email,
+            date: bookingDate,
+            time: 'To be confirmed',
+            purpose,
+            message,
+            action: 'New Appointment Request'
+        });
+
+        // Keep the existing internal notification.
+        addNotification(
+            `New public booking from ${name} (${phone}) for ${purpose} on ${bookingDate}`,
+            'appointment'
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: "Appointment request submitted successfully.",
+            emailSent: emailResult.sent,
+            booking: {
+                id: appointment.id,
+                name: appointment.name,
+                phone: appointment.phone,
+                email: appointment.email,
+                service: appointment.service,
+                date: bookingDate,
+                time: appointment.appointment_time || "To be confirmed",
+                purpose: appointment.purpose,
+                message: appointment.message,
+                status: appointment.status
+            }
+        });
+
+    } catch (error) {
+        console.error(
+            '❌ Failed to process public appointment request:',
+            error
+        );
+
+        return res.status(500).json({
+            error: "Unable to submit appointment request."
+        });
+    }
 });
-
 // Notifications routes
 app.get('/api/notifications', (req, res) => {
     const notifs = readDataFile(NOTIFICATIONS_FILE, []);
