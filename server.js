@@ -2029,6 +2029,15 @@ if (appointmentAction && email) {
         `📧 Doctor appointment email result for ${email}:`,
         emailResult
     );
+    await addNotification(
+    `Email notification sent to ${email}`,
+    "email"
+);
+
+await addNotification(
+    `Appointment ${appointmentAction.toLowerCase()} for ${name} on ${appointment.date} at ${appointment.time}`,
+    "appointment"
+);
 }
 
 // Return the same frontend-friendly structure used by GET /api/patients
@@ -2724,9 +2733,37 @@ app.post('/api/appointments/request', async (req, res) => {
     }
 });
 // Notifications routes
-app.get('/api/notifications', (req, res) => {
-    const notifs = readDataFile(NOTIFICATIONS_FILE, []);
-    res.json(notifs);
+app.get('/api/notifications', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                id,
+                type,
+                message,
+                timestamp,
+                read
+            FROM notifications
+            ORDER BY timestamp DESC
+            LIMIT 50
+        `);
+
+        const notifications = result.rows.map(row => ({
+            id: row.id,
+            type: row.type,
+            message: row.message,
+            time: row.timestamp,
+            read: row.read
+        }));
+
+        res.json(notifications);
+
+    } catch (error) {
+        console.error("Notification fetch error:", error);
+
+        res.status(500).json({
+            error: "Unable to fetch notifications"
+        });
+    }
 });
 
 app.post('/api/notifications/clear', (req, res) => {
