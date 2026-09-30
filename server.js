@@ -1004,30 +1004,7 @@ app.post('/api/auth/register', async (req, res) => {
         );
 
         await client.query('COMMIT');
-        // Send appointment notification to the patient after the database update succeeds
-let emailResult = null;
-
-if (appointmentAction && email) {
-    emailResult = await sendAppointmentEmail({
-        to: email,
-        subject: `${appointmentAction} - Luna Skin Aesthetic`,
-        patientName: name,
-        patientPhone: contact,
-        patientEmail: email,
-        date: appointment.date,
-        time: appointment.time || 'Not specified',
-        purpose: appointment.purpose || 'Consultation',
-        message: previousAppointment
-            ? `Previous appointment: ${previousAppointment.appointment_date} at ${previousAppointment.appointment_time || 'Not specified'} (${previousAppointment.purpose || 'Consultation'})`
-            : '',
-        action: appointmentAction
-    });
-
-    console.log(
-        `📧 Doctor appointment email result for ${email}:`,
-        emailResult
-    );
-} 
+       
 
         // Return the same structure expected by the frontend
         const patientRecord = {
