@@ -249,10 +249,35 @@ async function handleLogin(e) {
         }
 
         // Save session
-        currentSession = data;
-        localStorage.setItem('luna-session', JSON.stringify(data));
+        // Save session using the current PostgreSQL patient record
+currentSession = data;
 
-        showToast(`Welcome back, ${data.name}!`);
+if (data.role === 'patient' && data.email) {
+    try {
+        const patientsRes = await fetch('/api/patients');
+
+        if (patientsRes.ok) {
+            const patientsList = await patientsRes.json();
+
+            const foundPatient = patientsList.find(
+                p => p.email &&
+                     p.email.toLowerCase() === data.email.toLowerCase()
+            );
+
+            if (foundPatient) {
+                // PostgreSQL is the source of truth
+                currentSession.patientRef = foundPatient.refId;
+                currentSession.patientRecord = foundPatient;
+            }
+        }
+    } catch (err) {
+        console.error('Failed to refresh patient record:', err);
+    }
+}
+
+localStorage.setItem('luna-session', JSON.stringify(currentSession));
+
+showToast(`Welcome back, ${data.name}!`);
 
         if (data.role === 'doctor') {
             await initDoctorPortal(data);
@@ -365,130 +390,299 @@ async function restoreSession() {
 // ─── PATIENT PORTAL MODULE ────────────────────────────────────
 let activePatientSection = 'overview';
 
+// function initPatientPortal(session) {
+//     let record = session.patientRecord;
+//     const name = session.name;
+
+//     // Update sidebar
+//     document.getElementById('patient-portal-name').textContent = name;
+//     document.getElementById('patient-portal-ref').textContent = record ? `Ref: ${record.refId}` : 'New Patient';
+
+//     // Update header date
+//     const now = new Date();
+//     const hour = now.getHours();
+//     const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+//     document.getElementById('patient-section-date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+//     // Fallback: If record is missing in session, query patients list by email and populate it
+//     if (!record && session.email) {
+//         fetch('/api/patients')
+//             .then(res => res.json())
+//             .then(patients => {
+//                 const found = patients.find(p => p.email.toLowerCase() === session.email.toLowerCase());
+//                 if (found) {
+//                     session.patientRecord = found;
+//                     session.patientRef = found.refId;
+//                     localStorage.setItem('luna-session', JSON.stringify(session));
+                    
+//                     // Re-render components with latest record
+//                     document.getElementById('patient-portal-ref').textContent = `Ref: ${found.refId}`;
+//                     document.getElementById('pt-welcome-name').textContent = `${greeting}, ${name.split(' ')[0]}!`;
+//                     document.getElementById('pt-ref-display').textContent = found.refId;
+                    
+//                     if (found.appointment && found.appointment.date) {
+//                         const apptDate = new Date(found.appointment.date);
+//                         document.getElementById('ov-next-appt').textContent = apptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+//                     } else {
+//                         document.getElementById('ov-next-appt').textContent = 'Not scheduled';
+//                     }
+                    
+//                     document.getElementById('ov-concern').textContent = found.concern || '—';
+//                     document.getElementById('ov-skincare-count').textContent = `${(found.skincare || []).length} product(s)`;
+//                     document.getElementById('ov-status').textContent = found.status || 'Active';
+                    
+//                     renderPatientTimeline(found);
+//                     renderPatientAppointment(found);
+                    
+//                     document.getElementById('cs-concern').textContent = found.concern || '—';
+//                     document.getElementById('cs-skintype').textContent = found.skintype || '—';
+//                     document.getElementById('cs-allergies').textContent = found.allergies || 'None';
+//                     document.getElementById('cs-protocol').textContent = found.protocol || 'No therapy protocol assigned yet.';
+//                     document.getElementById('cs-routine').textContent = found.routine || 'No routine prescribed yet.';
+                    
+//                     const pillsContainer = document.getElementById('cs-concerns-pills');
+//                     pillsContainer.innerHTML = '';
+//                     const concerns = found.concernsChecklist || {};
+//                     const concernLabels = { hyperpigmentation: 'Hyperpigmentation', acne: 'Acne', elasticity: 'Elasticity Loss', dehydration: 'Dehydration' };
+//                     let hasActive = false;
+//                     Object.entries(concerns).forEach(([key, val]) => {
+//                         if (val) {
+//                             hasActive = true;
+//                             const pill = document.createElement('span');
+//                             pill.className = 'concern-pill';
+//                             pill.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px;">check</span>${concernLabels[key] || key}`;
+//                             pillsContainer.appendChild(pill);
+//                         }
+//                     });
+//                     if (!hasActive) {
+//                         pillsContainer.innerHTML = '<p class="font-body-md text-secondary" style="font-style:italic;">No specific concerns flagged.</p>';
+//                     }
+                    
+//                     renderPatientSkincare(found);
+//                 }
+//             })
+//             .catch(err => console.error('Error fetching patient fallback:', err));
+//     }
+
+//     if (record) {
+//         // Overview
+//         document.getElementById('pt-welcome-name').textContent = `${greeting}, ${name.split(' ')[0]}!`;
+//         document.getElementById('pt-ref-display').textContent = record.refId;
+
+//         if (record.appointment && record.appointment.date) {
+//             const apptDate = new Date(record.appointment.date);
+//             document.getElementById('ov-next-appt').textContent = apptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+//         } else {
+//             document.getElementById('ov-next-appt').textContent = 'Not scheduled';
+//         }
+
+//         document.getElementById('ov-concern').textContent = record.concern || '—';
+//         document.getElementById('ov-skincare-count').textContent = `${(record.skincare || []).length} product(s)`;
+//         document.getElementById('ov-status').textContent = record.status || 'Active';
+
+//         // Timeline
+//         renderPatientTimeline(record);
+
+//         // Appointment
+//         renderPatientAppointment(record);
+
+//         // Case Summary
+//         document.getElementById('cs-concern').textContent = record.concern || '—';
+//         document.getElementById('cs-skintype').textContent = record.skintype || '—';
+//         document.getElementById('cs-allergies').textContent = record.allergies || 'None';
+//         document.getElementById('cs-protocol').textContent = record.protocol || 'No therapy protocol assigned yet.';
+//         document.getElementById('cs-routine').textContent = record.routine || 'No routine prescribed yet.';
+
+//         // Concerns pills
+//         const pillsContainer = document.getElementById('cs-concerns-pills');
+//         pillsContainer.innerHTML = '';
+//         const concerns = record.concernsChecklist || {};
+//         const concernLabels = { hyperpigmentation: 'Hyperpigmentation', acne: 'Acne', elasticity: 'Elasticity Loss', dehydration: 'Dehydration' };
+//         let hasActive = false;
+//         Object.entries(concerns).forEach(([key, val]) => {
+//             if (val) {
+//                 hasActive = true;
+//                 const pill = document.createElement('span');
+//                 pill.className = 'concern-pill';
+//                 pill.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px;">check</span>${concernLabels[key] || key}`;
+//                 pillsContainer.appendChild(pill);
+//             }
+//         });
+//         if (!hasActive) {
+//             pillsContainer.innerHTML = '<p class="font-body-md text-secondary" style="font-style:italic;">No specific concerns flagged.</p>';
+//         }
+
+//         // Prescriptions
+//         renderPatientSkincare(record);
+
+//         // Gallery
+//         const beforeImg = document.getElementById('pt-before-img');
+//         const afterImg = document.getElementById('pt-after-img');
+//         const beforePh = document.getElementById('pt-before-placeholder');
+//         const afterPh = document.getElementById('pt-after-placeholder');
+
+//         if (record.beforeImg) {
+//             beforeImg.src = record.beforeImg;
+//             beforeImg.style.display = 'block';
+//             beforePh.style.display = 'none';
+//         }
+//         if (record.afterImg) {
+//             afterImg.src = record.afterImg;
+//             afterImg.style.display = 'block';
+//             afterPh.style.display = 'none';
+//         }
+//         document.getElementById('pt-before-date').textContent = record.beforeDate || '';
+//         document.getElementById('pt-after-date').textContent = record.afterDate || '';
+
+//     } else {
+//         document.getElementById('pt-welcome-name').textContent = `${greeting}, ${name.split(' ')[0]}!`;
+//         document.getElementById('pt-ref-display').textContent = 'New Registration';
+//         document.getElementById('ov-concern').textContent = 'Pending consultation';
+//         document.getElementById('ov-next-appt').textContent = 'Not scheduled';
+//     }
+
+//     switchPatientSection('overview');
+// }
 function initPatientPortal(session) {
     let record = session.patientRecord;
     const name = session.name;
 
     // Update sidebar
     document.getElementById('patient-portal-name').textContent = name;
-    document.getElementById('patient-portal-ref').textContent = record ? `Ref: ${record.refId}` : 'New Patient';
+    document.getElementById('patient-portal-ref').textContent =
+        record ? `Ref: ${record.refId}` : 'New Patient';
 
     // Update header date
     const now = new Date();
     const hour = now.getHours();
-    const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    document.getElementById('patient-section-date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const greeting =
+        hour < 12 ? 'Good morning' :
+        hour < 18 ? 'Good afternoon' :
+        'Good evening';
 
-    // Fallback: If record is missing in session, query patients list by email and populate it
-    if (!record && session.email) {
-        fetch('/api/patients')
-            .then(res => res.json())
-            .then(patients => {
-                const found = patients.find(p => p.email.toLowerCase() === session.email.toLowerCase());
-                if (found) {
-                    session.patientRecord = found;
-                    session.patientRef = found.refId;
-                    localStorage.setItem('luna-session', JSON.stringify(session));
-                    
-                    // Re-render components with latest record
-                    document.getElementById('patient-portal-ref').textContent = `Ref: ${found.refId}`;
-                    document.getElementById('pt-welcome-name').textContent = `${greeting}, ${name.split(' ')[0]}!`;
-                    document.getElementById('pt-ref-display').textContent = found.refId;
-                    
-                    if (found.appointment && found.appointment.date) {
-                        const apptDate = new Date(found.appointment.date);
-                        document.getElementById('ov-next-appt').textContent = apptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    } else {
-                        document.getElementById('ov-next-appt').textContent = 'Not scheduled';
-                    }
-                    
-                    document.getElementById('ov-concern').textContent = found.concern || '—';
-                    document.getElementById('ov-skincare-count').textContent = `${(found.skincare || []).length} product(s)`;
-                    document.getElementById('ov-status').textContent = found.status || 'Active';
-                    
-                    renderPatientTimeline(found);
-                    renderPatientAppointment(found);
-                    
-                    document.getElementById('cs-concern').textContent = found.concern || '—';
-                    document.getElementById('cs-skintype').textContent = found.skintype || '—';
-                    document.getElementById('cs-allergies').textContent = found.allergies || 'None';
-                    document.getElementById('cs-protocol').textContent = found.protocol || 'No therapy protocol assigned yet.';
-                    document.getElementById('cs-routine').textContent = found.routine || 'No routine prescribed yet.';
-                    
-                    const pillsContainer = document.getElementById('cs-concerns-pills');
-                    pillsContainer.innerHTML = '';
-                    const concerns = found.concernsChecklist || {};
-                    const concernLabels = { hyperpigmentation: 'Hyperpigmentation', acne: 'Acne', elasticity: 'Elasticity Loss', dehydration: 'Dehydration' };
-                    let hasActive = false;
-                    Object.entries(concerns).forEach(([key, val]) => {
-                        if (val) {
-                            hasActive = true;
-                            const pill = document.createElement('span');
-                            pill.className = 'concern-pill';
-                            pill.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px;">check</span>${concernLabels[key] || key}`;
-                            pillsContainer.appendChild(pill);
-                        }
-                    });
-                    if (!hasActive) {
-                        pillsContainer.innerHTML = '<p class="font-body-md text-secondary" style="font-style:italic;">No specific concerns flagged.</p>';
-                    }
-                    
-                    renderPatientSkincare(found);
-                }
-            })
-            .catch(err => console.error('Error fetching patient fallback:', err));
-    }
+    document.getElementById('patient-section-date').textContent =
+        now.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
 
-    if (record) {
-        // Overview
-        document.getElementById('pt-welcome-name').textContent = `${greeting}, ${name.split(' ')[0]}!`;
-        document.getElementById('pt-ref-display').textContent = record.refId;
-
-        if (record.appointment && record.appointment.date) {
-            const apptDate = new Date(record.appointment.date);
-            document.getElementById('ov-next-appt').textContent = apptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        } else {
-            document.getElementById('ov-next-appt').textContent = 'Not scheduled';
+    // Render the currently available record first
+    const renderRecord = (patient) => {
+        if (!patient) {
+            document.getElementById('pt-welcome-name').textContent =
+                `${greeting}, ${name.split(' ')[0]}!`;
+            document.getElementById('pt-ref-display').textContent =
+                'New Registration';
+            document.getElementById('ov-concern').textContent =
+                'Pending consultation';
+            document.getElementById('ov-next-appt').textContent =
+                'Not scheduled';
+            return;
         }
 
-        document.getElementById('ov-concern').textContent = record.concern || '—';
-        document.getElementById('ov-skincare-count').textContent = `${(record.skincare || []).length} product(s)`;
-        document.getElementById('ov-status').textContent = record.status || 'Active';
+        // Keep session in sync with PostgreSQL
+        session.patientRecord = patient;
+        session.patientRef = patient.refId;
+        record = patient;
+
+        localStorage.setItem('luna-session', JSON.stringify(session));
+
+        // Sidebar
+        document.getElementById('patient-portal-ref').textContent =
+            `Ref: ${patient.refId}`;
+
+        // Overview
+        document.getElementById('pt-welcome-name').textContent =
+            `${greeting}, ${name.split(' ')[0]}!`;
+
+        document.getElementById('pt-ref-display').textContent =
+            patient.refId;
+
+        if (patient.appointment && patient.appointment.date) {
+            const apptDate = new Date(patient.appointment.date);
+
+            document.getElementById('ov-next-appt').textContent =
+                apptDate.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+        } else {
+            document.getElementById('ov-next-appt').textContent =
+                'Not scheduled';
+        }
+
+        document.getElementById('ov-concern').textContent =
+            patient.concern || '—';
+
+        document.getElementById('ov-skincare-count').textContent =
+            `${(patient.skincare || []).length} product(s)`;
+
+        document.getElementById('ov-status').textContent =
+            patient.status || 'Active';
 
         // Timeline
-        renderPatientTimeline(record);
+        renderPatientTimeline(patient);
 
         // Appointment
-        renderPatientAppointment(record);
+        renderPatientAppointment(patient);
 
         // Case Summary
-        document.getElementById('cs-concern').textContent = record.concern || '—';
-        document.getElementById('cs-skintype').textContent = record.skintype || '—';
-        document.getElementById('cs-allergies').textContent = record.allergies || 'None';
-        document.getElementById('cs-protocol').textContent = record.protocol || 'No therapy protocol assigned yet.';
-        document.getElementById('cs-routine').textContent = record.routine || 'No routine prescribed yet.';
+        document.getElementById('cs-concern').textContent =
+            patient.concern || '—';
+
+        document.getElementById('cs-skintype').textContent =
+            patient.skintype || '—';
+
+        document.getElementById('cs-allergies').textContent =
+            patient.allergies || 'None';
+
+        document.getElementById('cs-protocol').textContent =
+            patient.protocol || 'No therapy protocol assigned yet.';
+
+        document.getElementById('cs-routine').textContent =
+            patient.routine || 'No routine prescribed yet.';
 
         // Concerns pills
-        const pillsContainer = document.getElementById('cs-concerns-pills');
+        const pillsContainer =
+            document.getElementById('cs-concerns-pills');
+
         pillsContainer.innerHTML = '';
-        const concerns = record.concernsChecklist || {};
-        const concernLabels = { hyperpigmentation: 'Hyperpigmentation', acne: 'Acne', elasticity: 'Elasticity Loss', dehydration: 'Dehydration' };
+
+        const concerns = patient.concernsChecklist || {};
+
+        const concernLabels = {
+            hyperpigmentation: 'Hyperpigmentation',
+            acne: 'Acne',
+            elasticity: 'Elasticity Loss',
+            dehydration: 'Dehydration'
+        };
+
         let hasActive = false;
+
         Object.entries(concerns).forEach(([key, val]) => {
             if (val) {
                 hasActive = true;
+
                 const pill = document.createElement('span');
                 pill.className = 'concern-pill';
-                pill.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px;">check</span>${concernLabels[key] || key}`;
+
+                pill.innerHTML =
+                    `<span class="material-symbols-outlined" style="font-size:14px;">check</span>${concernLabels[key] || key}`;
+
                 pillsContainer.appendChild(pill);
             }
         });
+
         if (!hasActive) {
-            pillsContainer.innerHTML = '<p class="font-body-md text-secondary" style="font-style:italic;">No specific concerns flagged.</p>';
+            pillsContainer.innerHTML =
+                '<p class="font-body-md text-secondary" style="font-style:italic;">No specific concerns flagged.</p>';
         }
 
         // Prescriptions
-        renderPatientSkincare(record);
+        renderPatientSkincare(patient);
 
         // Gallery
         const beforeImg = document.getElementById('pt-before-img');
@@ -496,25 +690,68 @@ function initPatientPortal(session) {
         const beforePh = document.getElementById('pt-before-placeholder');
         const afterPh = document.getElementById('pt-after-placeholder');
 
-        if (record.beforeImg) {
-            beforeImg.src = record.beforeImg;
+        if (patient.beforeImg) {
+            beforeImg.src = patient.beforeImg;
             beforeImg.style.display = 'block';
             beforePh.style.display = 'none';
         }
-        if (record.afterImg) {
-            afterImg.src = record.afterImg;
+
+        if (patient.afterImg) {
+            afterImg.src = patient.afterImg;
             afterImg.style.display = 'block';
             afterPh.style.display = 'none';
         }
-        document.getElementById('pt-before-date').textContent = record.beforeDate || '';
-        document.getElementById('pt-after-date').textContent = record.afterDate || '';
 
-    } else {
-        document.getElementById('pt-welcome-name').textContent = `${greeting}, ${name.split(' ')[0]}!`;
-        document.getElementById('pt-ref-display').textContent = 'New Registration';
-        document.getElementById('ov-concern').textContent = 'Pending consultation';
-        document.getElementById('ov-next-appt').textContent = 'Not scheduled';
-    }
+        document.getElementById('pt-before-date').textContent =
+            patient.beforeDate || '';
+
+        document.getElementById('pt-after-date').textContent =
+            patient.afterDate || '';
+    };
+
+    // Render cached record immediately
+    renderRecord(record);
+
+    // IMPORTANT:
+    // Always refresh the patient record from PostgreSQL.
+    // This ensures doctor-side rescheduling appears on the patient side.
+    fetch('/api/patients')
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(patients => {
+            let found = null;
+
+            // Prefer patientRef because it is the unique patient identifier
+            if (session.patientRef) {
+                found = patients.find(
+                    p => p.refId === session.patientRef
+                );
+            }
+
+            // Fallback to email
+            if (!found && session.email) {
+                found = patients.find(
+                    p =>
+                        p.email &&
+                        p.email.toLowerCase() ===
+                        session.email.toLowerCase()
+                );
+            }
+
+            if (found) {
+                renderRecord(found);
+            }
+        })
+        .catch(err => {
+            console.error(
+                'Error refreshing patient record from PostgreSQL:',
+                err
+            );
+        });
 
     switchPatientSection('overview');
 }
@@ -846,27 +1083,68 @@ async function loadAllAppointments() {
     }
 }
 
+// async function savePatientToServer(patient) {
+//     if (!patient) return;
+//     try {
+//         const res = await fetch(`/api/patients/${patient.refId}`, {
+//             method: 'PUT',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify(patient)
+//         });
+//         if (!res.ok) throw new Error('HTTP error ' + res.status);
+//         const updated = await res.json();
+//         const index = patients.findIndex(p => p.refId === patient.refId);
+//         if (index !== -1) patients[index] = updated;
+//         // Refresh appointment cache
+//         await loadAllAppointments();
+//     } catch (err) {
+//         console.error('Failed to save patient to server:', err);
+//         showToast('Failed to save updates to database.', 'error');
+//     }
+// }
+
+// ─── TOAST NOTIFICATION SYSTEM ────────────────────────────────
 async function savePatientToServer(patient) {
     if (!patient) return;
+
     try {
         const res = await fetch(`/api/patients/${patient.refId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(patient)
         });
-        if (!res.ok) throw new Error('HTTP error ' + res.status);
+
+        if (!res.ok) {
+            throw new Error('HTTP error ' + res.status);
+        }
+
         const updated = await res.json();
-        const index = patients.findIndex(p => p.refId === patient.refId);
-        if (index !== -1) patients[index] = updated;
+
+        const index = patients.findIndex(
+            p => p.refId === patient.refId
+        );
+
+        if (index !== -1) {
+            patients[index] = updated;
+        }
+
         // Refresh appointment cache
         await loadAllAppointments();
+
+        // Return the updated patient to the caller
+        return updated;
+
     } catch (err) {
         console.error('Failed to save patient to server:', err);
         showToast('Failed to save updates to database.', 'error');
+
+        // Important: let the caller know the save failed
+        throw err;
     }
 }
 
-// ─── TOAST NOTIFICATION SYSTEM ────────────────────────────────
+
+
 function showToast(message, type = 'success') {
     let container = document.getElementById('toast-container');
     if (!container) {
@@ -1553,40 +1831,76 @@ function renderPatientDirectory(filteredSearch = '') {
         });
 
         tr.querySelector('.delete-patient-btn').addEventListener('click', async e => {
-            e.stopPropagation();
-            if (confirm(`Are you sure you want to permanently delete the patient record for ${p.name}?`)) {
-                const targetRef = p.refId;
+    e.stopPropagation();
 
-                // 1. Mark as deleted in localStorage immediately
-                markPatientAsDeletedInLocalStorage(targetRef);
-                removeCustomPatientFromLocalStorage(targetRef);
+    if (!confirm(`Are you sure you want to permanently delete the patient record for ${p.name}?`)) {
+        return;
+    }
 
-                // 2. Remove from local patients array
-                patients = patients.filter(item => item.refId !== targetRef);
+    const targetRef = p.refId;
 
-                // 3. Update active patient if deleted
-                if (activePatient && activePatient.refId === targetRef) {
-                    activePatient = patients[0] || null;
-                    if (activePatient) {
-                        localStorage.setItem('luna-active-patient-ref', activePatient.refId);
-                        loadPatientData(activePatient);
-                    } else {
-                        localStorage.removeItem('luna-active-patient-ref');
-                    }
-                }
-
-                // 4. Update UI directory table immediately
-                renderPatientDirectory();
-                showToast(`Patient record for ${p.name} deleted successfully.`);
-
-                // 5. Send delete API request to backend asynchronously
-                try {
-                    await fetch(`/api/patients/${encodeURIComponent(targetRef)}`, { method: 'DELETE' });
-                } catch (err) {
-                    console.warn('Backend delete sync note:', err);
-                }
+    try {
+        // 1. Delete from PostgreSQL first
+        const response = await fetch(
+            `/api/patients/${encodeURIComponent(targetRef)}`,
+            {
+                method: 'DELETE'
             }
-        });
+        );
+
+        const result = await response.json().catch(() => ({}));
+
+        // 2. Stop if PostgreSQL deletion failed
+        if (!response.ok) {
+            throw new Error(
+                result.error || `Delete failed with HTTP ${response.status}`
+            );
+        }
+
+        // 3. PostgreSQL confirmed deletion.
+        // Now update localStorage.
+        markPatientAsDeletedInLocalStorage(targetRef);
+        removeCustomPatientFromLocalStorage(targetRef);
+
+        // 4. Remove from local patients array
+        patients = patients.filter(item => item.refId !== targetRef);
+
+        // 5. Update active patient if the deleted patient was active
+        if (activePatient && activePatient.refId === targetRef) {
+            activePatient = patients[0] || null;
+
+            if (activePatient) {
+                localStorage.setItem(
+                    'luna-active-patient-ref',
+                    activePatient.refId
+                );
+                loadPatientData(activePatient);
+            } else {
+                localStorage.removeItem('luna-active-patient-ref');
+            }
+        }
+
+        // 6. Refresh the patient directory
+        renderPatientDirectory();
+
+        // 7. Refresh doctor calendar from PostgreSQL
+        await loadAllAppointments();
+
+        showToast(`Patient record for ${p.name} deleted successfully.`);
+
+        console.log(
+            `🗑️ Patient deleted successfully: ${p.name} (${targetRef})`
+        );
+
+    } catch (err) {
+        console.error('❌ Failed to delete patient:', err);
+
+        showToast(
+            `Failed to delete ${p.name}. The patient was not removed.`,
+            'error'
+        );
+    }
+});
 
         tbody.appendChild(tr);
     });
@@ -1770,38 +2084,90 @@ document.getElementById('confirm-booking-btn')?.addEventListener('click', async 
 });
 
 document.getElementById('modal-save-btn')?.addEventListener('click', async () => {
+    const saveButton = document.getElementById('modal-save-btn');
+
+    // Prevent double-click / duplicate requests
+    if (saveButton.disabled) return;
+
     const date = document.getElementById('modal-date-input').value;
     const time = document.getElementById('modal-time-select').value;
     const purpose = document.getElementById('modal-purpose-input').value;
 
-    if (!date) { showToast('Please select a date.', 'error'); return; }
-
-    if (!activePatient.appointment) {
-        activePatient.appointment = { date, time, purpose };
-    } else {
-        activePatient.appointment.date = date;
-        activePatient.appointment.time = time;
-        activePatient.appointment.purpose = purpose;
+    if (!date) {
+        showToast('Please select a date.', 'error');
+        return;
     }
 
-    const parsed = parseApptDate(date);
-    if (parsed) {
-        currentMonth = parsed.getMonth();
-        currentYear = parsed.getFullYear();
+    // Lock the button immediately
+    saveButton.disabled = true;
+    const originalButtonText = saveButton.textContent;
+    saveButton.textContent = 'Saving...';
+
+    try {
+        if (!activePatient.appointment) {
+            activePatient.appointment = { date, time, purpose };
+        } else {
+            activePatient.appointment.date = date;
+            activePatient.appointment.time = time;
+            activePatient.appointment.purpose = purpose;
+        }
+
+        const parsed = parseApptDate(date);
+
+        if (parsed) {
+            currentMonth = parsed.getMonth();
+            currentYear = parsed.getFullYear();
+        }
+
+        document.getElementById('schedule-date-text').textContent =
+            formatApptDate(date, {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric'
+            });
+
+        document.getElementById('schedule-time-text').textContent =
+            `${time} — ${purpose}`;
+
+        saveCurrentInputsToMemory();
+
+        await savePatientToServer(activePatient);
+
+        saveCustomPatientToLocalStorage(activePatient);
+
+        // Move calendar to the newly scheduled appointment date
+        const savedApptDate = parseApptDate(date);
+
+        if (savedApptDate) {
+            currentMonth = savedApptDate.getMonth();
+            currentYear = savedApptDate.getFullYear();
+        }
+
+        renderCalendar();
+        showDaySchedule(date);
+
+        closeModal('reschedule-modal');
+
+        showToast(
+            `Appointment scheduled for ${formatApptDate(date, {
+                month: 'long',
+                day: 'numeric'
+            })}.`
+        );
+
+    } catch (error) {
+        console.error('Failed to save appointment:', error);
+
+        showToast(
+            'Failed to save appointment. Please try again.',
+            'error'
+        );
+    } finally {
+        // Always unlock the button
+        saveButton.disabled = false;
+        saveButton.textContent = originalButtonText;
     }
-
-    document.getElementById('schedule-date-text').textContent = formatApptDate(date, { weekday: 'long', month: 'long', day: 'numeric' });
-    document.getElementById('schedule-time-text').textContent = `${time} — ${purpose}`;
-
-    saveCurrentInputsToMemory();
-    await savePatientToServer(activePatient);
-    saveCustomPatientToLocalStorage(activePatient);
-    renderCalendar();
-    showDaySchedule(date);
-    closeModal('reschedule-modal');
-    showToast(`Appointment scheduled for ${formatApptDate(date, { month: 'long', day: 'numeric' })}.`);
 });
-
 // Helper for selecting 1 of 4 core service cards in modal
 function selectModalServiceCard(cardEl, serviceName) {
     document.querySelectorAll('#modal-service-cards .service-option-card').forEach(c => c.classList.remove('selected'));

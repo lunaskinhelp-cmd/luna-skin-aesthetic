@@ -2,3 +2,4 @@ node_modules/
 uploads/
 .system_generated/
 *.log
+.env
