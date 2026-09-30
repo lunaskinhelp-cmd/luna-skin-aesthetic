@@ -2028,11 +2028,33 @@ if (latestAppointmentResult.rows.length > 0) {
 }
         }
 
-        await client.query('COMMIT');
+       await client.query('COMMIT');
 
+let emailResult = null;
 
+if (appointmentAction && email) {
+    emailResult = await sendAppointmentEmail({
+        to: email,
+        subject: `${appointmentAction} - Luna Skin Aesthetic`,
+        patientName: name,
+        patientPhone: contact,
+        patientEmail: email,
+        date: appointment.date,
+        time: appointment.time || 'Not specified',
+        purpose: appointment.purpose || 'Consultation',
+        message: previousAppointment
+            ? `Previous appointment: ${previousAppointment.appointment_date} at ${previousAppointment.appointment_time || 'Not specified'} (${previousAppointment.purpose || 'Consultation'})`
+            : '',
+        action: appointmentAction
+    });
 
-        // Return the same frontend-friendly structure used by GET /api/patients
+    console.log(
+        `📧 Doctor appointment email result for ${email}:`,
+        emailResult
+    );
+}
+
+// Return the same frontend-friendly structure used by GET /api/patients
         const proceduresResult = await pool.query(
             `
             SELECT name, procedure_date, clinic
