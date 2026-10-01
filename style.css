@@ -2031,7 +2031,7 @@ footer.app-footer .footer-links a:hover {
 /* Hero Section */
 .hero-section {
     min-height: 100vh;
-    background: linear-gradient(135deg, #FAF9F6 0%, #E8EFEA 50%, #FAF9F6 100%);
+    
     display: flex;
     align-items: center;
     padding: 120px var(--margin-desktop) 80px;
