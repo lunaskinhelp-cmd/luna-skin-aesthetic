@@ -2944,13 +2944,17 @@ footer.app-footer .footer-links a:hover {
     color: var(--color-secondary);
     margin-top: 24px;
 }
+.login-btn{
+    background-color: #872626 !important;
+}
 
 .auth-link-btn {
     background: none;
     border: none;
     font-size: 13px;
     font-weight: 700;
-    color: var(--color-primary);
+    /* color: var(--color-primary); */
+    color: #872626;
     cursor: pointer;
     text-decoration: underline;
     text-underline-offset: 3px;
