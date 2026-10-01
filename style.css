@@ -2720,7 +2720,8 @@ footer.app-footer .footer-links a:hover {
 
 /* Auth Brand Panel */
 .auth-brand-panel {
-    background: linear-gradient(160deg, var(--color-primary-container) 0%, var(--color-primary) 50%, var(--color-primary-container) 100%);
+    /* background: linear-gradient(160deg, var(--color-primary-container) 0%, var(--color-primary) 50%, var(--color-primary-container) 100%); */
+    background-color: #872626;
     position: relative;
     display: flex;
     align-items: center;
@@ -2848,7 +2849,8 @@ footer.app-footer .footer-links a:hover {
 .auth-role-btn .material-symbols-outlined { font-size: 16px; }
 
 .auth-role-btn.active {
-    background: var(--color-primary);
+    /* background: var(--color-primary); */
+    background: #872626;
     color: var(--color-on-primary);
 }
 
@@ -2874,14 +2876,17 @@ footer.app-footer .footer-links a:hover {
 }
 
 .auth-tab-btn.active {
-    color: var(--color-primary);
-    border-bottom-color: var(--color-primary);
+    /* color: var(--color-primary);
+    border-bottom-color: var(--color-primary); */
+    color: #872626;
+    border-bottom-color: #872626;
 }
 
 .auth-form-title {
     font-size: 28px;
     font-weight: 700;
-    color: var(--color-primary);
+    /* color: var(--color-primary); */
+    color: #872626;
     letter-spacing: -0.02em;
     margin-bottom: 8px;
 }
