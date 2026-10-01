@@ -2609,6 +2609,34 @@ footer.app-footer .footer-links a:hover {
 }
 
 /* Landing Footer */
+
+.social-media {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.social-media a {
+    width: clamp(34px, 4vw, 38px);
+    height: clamp(34px, 4vw, 38px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.social-media img {
+    width: clamp(20px, 2.5vw, 22px);
+    height: clamp(20px, 2.5vw, 22px);
+    object-fit: contain;
+}
+
+.social-media a:hover {
+    transform: translateY(-2px);
+    opacity: 0.8;
+}
 .landing-footer {
     background: #1C1A19;
     padding: 64px var(--margin-desktop) 32px;
