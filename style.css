@@ -2638,9 +2638,12 @@ footer.app-footer .footer-links a:hover {
     opacity: 0.8;
 }
 .landing-footer {
-    background: #1C1A19;
+    background: black;
     padding: 64px var(--margin-desktop) 32px;
     color: rgba(255,255,255,0.6);
+}
+.landing-footer .brand-logo-img{
+    background-color: transparent !important;
 }
 
 .footer-top {
