@@ -1,5 +1,7 @@
 node_modules/
-uploads/
+uploads/*
+!uploads/image/
+!uploads/image/*
 .system_generated/
 *.log
 .env
