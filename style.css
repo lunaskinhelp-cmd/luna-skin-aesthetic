@@ -2593,7 +2593,7 @@ footer.app-footer .footer-links a:hover {
     align-items: center;
     gap: 12px;
     font-size: 14px;
-    color: color-mix(in srgb, var(--color-on-primary) 85%, transparent);
+    color: color-mix(in srgb, var(--color-on-primary) 85%, transparent) !important;
 }
 
 .contact-pill .material-symbols-outlined {
