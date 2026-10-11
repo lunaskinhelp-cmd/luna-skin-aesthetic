@@ -3011,9 +3011,16 @@ document.getElementById('proc-save-btn')?.addEventListener('click', async () => 
     try {
         activePatient.procedures.push({ name, date, clinic });
 
-        await savePatientToServer(activePatient, {
+        const patientToSave = {
+    ...activePatient,
+    appointment: null
+};
+
+const updatedPatient = await savePatientToServer(patientToSave, {
     refreshAppointments: false
 });
+
+activePatient = updatedPatient;
 
         renderProceduresTable();
         closeModal('procedure-modal');
