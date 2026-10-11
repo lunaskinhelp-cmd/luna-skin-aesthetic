@@ -1,3 +1,56 @@
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+
+#proc-save-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+#proc-save-btn .material-symbols-outlined {
+    vertical-align: middle;
+}
+
+#proc-save-btn:disabled .material-symbols-outlined {
+    animation: procedure-save-spin 1s linear infinite;
+}
+
+@keyframes procedure-save-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* Keep the appointment modal within the screen */
+#reschedule-modal .modal-content {
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Allow the appointment form to scroll */
+#reschedule-modal .modal-body {
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Keep the modal footer and booking button visible */
+#reschedule-modal .modal-footer {
+    flex-shrink: 0;
+}
+
+
 /* Luminous Clinical Design System */
 
 /* Root tokens */

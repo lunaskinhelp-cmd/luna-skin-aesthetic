@@ -857,10 +857,13 @@
                                         <option>Initial Consultation</option>
                                     </select>
                                 </div>
-                                <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
-                                    <span class="material-symbols-outlined" style="font-size:16px;">calendar_add_on</span>
-                                    Confirm Appointment
-                                </button>
+<button type="submit" id="confirmAppointmentBtn" class="btn-primary"
+    style="width:100%;justify-content:center;">
+    <span class="material-symbols-outlined" style="font-size:16px;">calendar_add_on</span>
+    <span>Confirm Appointment</span>
+</button>
+
+
                             </form>
                         </div>
                     </div>
@@ -1107,6 +1110,7 @@
                     <div class="tab-nav">
                         <span class="tab-btn" id="tab-case-sheets">Case Sheets</span>
                         <span class="tab-btn active" id="tab-patient-list">Patient List</span>
+                        <span class="tab-btn" id="tab-calendar">Calendar</span>
                     </div>
                 </div>
 
@@ -1349,6 +1353,7 @@
                                             <p class="font-headline-md text-primary" style="margin-top:8px;" id="schedule-date-text">Select a date</p>
                                             <p class="font-body-md text-secondary" style="margin-top:4px;text-transform:none;" id="schedule-time-text"></p>
                                         </div>
+                                        
                                         <div style="display:flex;gap:16px;">
                                             <button class="btn-primary" id="confirm-booking-btn" style="flex:1;">Confirm Booking</button>
                                             <button class="btn-secondary" id="reschedule-btn" style="flex:1;">Reschedule</button>
@@ -1499,8 +1504,29 @@
                             </table>
                         </div>
                     </div>
-                </main>
+                </main> 
             </div>
+            
+<!-- OVERALL CALENDAR VIEW -->
+<div id="overall-calendar-view" class="view-panel" style="display:none;">
+    <main class="patient-list-section">
+        <div class="patient-table-card">
+            <h2 class="font-headline-md text-primary" style="margin-bottom:24px;">
+                Clinic Calendar
+            </h2>
+
+            <p class="text-secondary" style="margin-bottom:20px;">
+                View appointments for all patients.
+            </p>
+
+            <div id="overall-calendar-content">
+                <p class="text-secondary">Loading calendar...</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+            
 
             <!-- Footer -->
             <footer class="app-footer">
@@ -1574,6 +1600,30 @@
                     </select>
                 </div>
             </div>
+
+            <div class="form-group" id="appointment-room-group">
+    <label class="label-clinical" for="appointment-room-select">
+        Appointment Room
+    </label>
+
+    <select
+        class="input-clinical font-body-md"
+        id="appointment-room-select"
+        style="width:100%;"
+        disabled
+    >
+        <option value="">Select date, time, and duration first</option>
+    </select>
+
+    <p
+        id="appointment-room-help"
+        class="text-secondary"
+        style="margin-top:8px;font-size:12px;"
+    >
+        Available rooms will appear here.
+    </p>
+</div>
+
             
             <div class="form-group">
                 <label class="label-clinical" style="margin-bottom:12px;display:block;">Core Service Options (Select 1 of 4 Key Therapies)</label>

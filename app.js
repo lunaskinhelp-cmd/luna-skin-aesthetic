@@ -831,63 +831,126 @@ function renderPatientSkincare(record) {
     });
 }
 
+
 async function submitPatientAppointment(e) {
     e.preventDefault();
-    let refId = currentSession?.patientRef;
 
-    // Fallback: If refId is missing, query patients list by email and resolve it
-    if (!refId && currentSession?.email) {
-        try {
-            const patientsList = await (await fetch('/api/patients')).json();
-            const found = patientsList.find(p => p.email.toLowerCase() === currentSession.email.toLowerCase());
-            if (found) {
-                refId = found.refId;
-                currentSession.patientRef = refId;
-                currentSession.patientRecord = found;
-                localStorage.setItem('luna-session', JSON.stringify(currentSession));
-            }
-        } catch (err) {
-            console.error('Fallback resolution failed:', err);
-        }
+    const confirmBtn = document.getElementById('confirmAppointmentBtn');
+
+    // Prevent duplicate submissions
+    if (confirmBtn?.disabled) return;
+
+    const originalButtonHTML = confirmBtn?.innerHTML;
+
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = `
+            <span class="material-symbols-outlined"
+                style="font-size:16px;animation:spin 1s linear infinite;">
+                progress_activity
+            </span>
+            <span>Booking...</span>
+        `;
+        confirmBtn.style.opacity = '0.7';
+        confirmBtn.style.cursor = 'wait';
     }
 
-    if (!refId) return showToast('No patient record found.', 'error');
-
-    const date = document.getElementById('pt-appt-date').value;
-    const time = document.getElementById('pt-appt-time').value;
-    const purpose = document.getElementById('pt-appt-purpose').value;
-
     try {
-        const res = await fetch(`/api/patients/${refId}/appointment`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ date, time, purpose })
-        });
+        let refId = currentSession?.patientRef;
 
-        if (!res.ok) throw new Error('Failed to book appointment');
+        // Resolve patient reference if missing
+        if (!refId && currentSession?.email) {
+            try {
+                const patientsRes = await fetch('/api/patients');
+                if (!patientsRes.ok) throw new Error('Unable to load patients');
+
+                const patientsList = await patientsRes.json();
+                const found = patientsList.find(
+                    p => p.email?.toLowerCase() ===
+                         currentSession.email.toLowerCase()
+                );
+
+                if (found) {
+                    refId = found.refId;
+                    currentSession.patientRef = refId;
+                    currentSession.patientRecord = found;
+                    localStorage.setItem(
+                        'luna-session',
+                        JSON.stringify(currentSession)
+                    );
+                }
+            } catch (err) {
+                console.error('Fallback resolution failed:', err);
+            }
+        }
+
+        if (!refId) {
+            showToast('No patient record found.', 'error');
+            return;
+        }
+
+        const date = document.getElementById('pt-appt-date').value;
+        const time = document.getElementById('pt-appt-time').value;
+        const purpose = document.getElementById('pt-appt-purpose').value;
+
+        const res = await fetch(
+            `/api/patients/${encodeURIComponent(refId)}/appointment`,
+            {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date, time, purpose })
+            }
+        );
+
+        if (!res.ok) {
+            throw new Error('Failed to book appointment');
+        }
 
         const updatedPatient = await res.json();
-        if (currentSession) currentSession.patientRecord = updatedPatient;
-        localStorage.setItem('luna-session', JSON.stringify(currentSession));
+
+        if (currentSession) {
+            currentSession.patientRecord = updatedPatient;
+            localStorage.setItem(
+                'luna-session',
+                JSON.stringify(currentSession)
+            );
+        }
 
         renderPatientAppointment(updatedPatient);
-        const apptDate = new Date(date);
-        document.getElementById('ov-next-appt').textContent = apptDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        const apptDate = new Date(date + 'T00:00:00');
+        document.getElementById('ov-next-appt').textContent =
+            apptDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
 
         showToast('Appointment confirmed! Updated via email & Google Calendar.');
         switchPatientSection('appointment');
 
-        // Show Google Calendar & ICS Modal
         openBookingSuccessModal({
             patientName: updatedPatient.name,
             date,
             time,
             purpose
         });
+
     } catch (err) {
+        console.error('Appointment booking failed:', err);
         showToast('Failed to book appointment. Please try again.', 'error');
+
+    } finally {
+        // Restore the button after success or failure
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalButtonHTML;
+            confirmBtn.style.opacity = '';
+            confirmBtn.style.cursor = '';
+        }
     }
 }
+
 
 function switchPatientSection(section) {
     activePatientSection = section;
@@ -1072,16 +1135,30 @@ async function loadPatientsFromServer() {
     }
 }
 
-// Load ALL appointments for calendar
+    // Load ALL appointments for calendar
+    
 async function loadAllAppointments() {
     try {
         const res = await fetch('/api/appointments');
+
+        if (!res.ok) {
+            throw new Error(`Failed to load appointments: ${res.status}`);
+        }
+
         allAppointments = await res.json();
-        renderCalendar(); // Re-render calendar with appointment dots
+
+        // Refresh the existing patient-specific calendar.
+        renderCalendar();
+
+        // Render the separate overall calendar, if implemented.
+        if (typeof renderOverallCalendar === 'function') {
+            renderOverallCalendar();
+        }
     } catch (err) {
         console.error('Failed to load appointments:', err);
     }
 }
+
 
 // async function savePatientToServer(patient) {
 //     if (!patient) return;
@@ -1104,18 +1181,37 @@ async function loadAllAppointments() {
 // }
 
 // ─── TOAST NOTIFICATION SYSTEM ────────────────────────────────
-async function savePatientToServer(patient) {
-    if (!patient) return;
+
+
+async function savePatientToServer(patient, options = {}) {
+    if (!patient) {
+        throw new Error('Patient data is missing.');
+    }
+
+    const { refreshAppointments = true } = options;
 
     try {
         const res = await fetch(`/api/patients/${patient.refId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(patient)
         });
 
         if (!res.ok) {
-            throw new Error('HTTP error ' + res.status);
+            let errorMessage = `Request failed (${res.status}).`;
+
+            try {
+                const errorData = await res.json();
+                if (errorData.error) {
+                    errorMessage = errorData.error;
+                }
+            } catch (parseError) {
+                // Keep the fallback error message.
+            }
+
+            throw new Error(errorMessage);
         }
 
         const updated = await res.json();
@@ -1128,20 +1224,26 @@ async function savePatientToServer(patient) {
             patients[index] = updated;
         }
 
-        // Refresh appointment cache
-        await loadAllAppointments();
+        if (refreshAppointments) {
+            await loadAllAppointments();
+        }
 
-        // Return the updated patient to the caller
         return updated;
 
     } catch (err) {
         console.error('Failed to save patient to server:', err);
-        showToast('Failed to save updates to database.', 'error');
 
-        // Important: let the caller know the save failed
+        showToast(
+            err.message || 'Failed to save updates to database.',
+            'error'
+        );
+
         throw err;
     }
 }
+
+
+
 
 
 
@@ -1270,10 +1372,12 @@ function loadPatientData(patient) {
     updateSignatureUIState();
     lockInputsState(patient.signed);
 
-    // Update day schedule for current patient's appointment
+    
+    // Show only this patient's appointments
     if (patient.appointment && patient.appointment.date) {
-        showDaySchedule(patient.appointment.date);
+        showDaySchedule(patient.appointment.date, patient.refId);
     }
+
 }
 
 function saveCurrentInputsToMemory() {
@@ -1479,7 +1583,17 @@ function renderCalendar() {
 
         // Find ALL appointments on this day
         const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
-        const dayAppts = allAppointments.filter(a => a.date === dateStr);
+        
+const dayAppts = allAppointments.filter(a => {
+    const sameDate = String(a.date || '').slice(0, 10) === dateStr;
+
+    const samePatient =
+        activePatient?.refId != null &&
+        String(a.patientRef) === String(activePatient.refId);
+
+    return sameDate && samePatient;
+});
+
 
         // Render day number
         const dayNumSpan = document.createElement('span');
@@ -1513,21 +1627,51 @@ function renderCalendar() {
             document.querySelectorAll('.calendar-day.active').forEach(el => el.classList.remove('active'));
             div.classList.add('active');
 
-            if (!activePatient?.signed) {
-                if (!activePatient.appointment) {
-                    activePatient.appointment = { date: dateStr, time: '10:30 AM', purpose: 'Consultation' };
-                } else {
-                    activePatient.appointment.date = dateStr;
-                }
+            
+if (activePatient && !activePatient.signed) {
+    if (!activePatient.appointment) {
+        activePatient.appointment = {
+            date: dateStr,
+            time: '10:30 AM',
+            purpose: 'Consultation'
+        };
+    } else {
+        activePatient.appointment.date = dateStr;
+    }
 
-                const dateObj = new Date(dateStr);
-                const options = { weekday: 'long', month: 'long', day: 'numeric' };
-                document.getElementById('schedule-date-text').textContent = dateObj.toLocaleDateString('en-US', options);
-                showToast(`Date set to ${dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}. Save case sheet to confirm.`);
-            }
+    const dateObj = new Date(dateStr);
+    const options = {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric'
+    };
+
+    const scheduleDateText =
+        document.getElementById('schedule-date-text');
+
+    if (scheduleDateText) {
+        scheduleDateText.textContent =
+            dateObj.toLocaleDateString('en-US', options);
+    }
+
+    showToast(
+        `Date set to ${dateObj.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric'
+        })}. Save case sheet to confirm.`
+    );
+}
+
+if (activePatient?.refId != null) {
+    showDaySchedule(dateStr, activePatient.refId);
+}
+
 
             // Always show day schedule panel
-            showDaySchedule(dateStr);
+            // showDaySchedule(dateStr);
+            if (activePatient?.refId != null) {
+    showDaySchedule(dateStr, activePatient.refId);
+}
         });
 
         grid.appendChild(div);
@@ -1544,66 +1688,462 @@ function renderCalendar() {
     grid.appendChild(legend);
 }
 
-// Show all patients scheduled on a given day
-function showDaySchedule(dateStr) {
+function renderOverallCalendar() {
+    const container = document.getElementById('overall-calendar-content');
+    if (!container) return;
+
+    // Independent month navigation for the overall calendar.
+    if (typeof overallCalendarMonth === 'undefined') {
+        overallCalendarMonth = new Date().getMonth();
+        overallCalendarYear = new Date().getFullYear();
+    }
+
+    container.innerHTML = '';
+
+    const toolbar = document.createElement('div');
+    toolbar.style.cssText =
+        'display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;';
+
+    const prevButton = document.createElement('button');
+    prevButton.className = 'btn-secondary';
+    prevButton.textContent = '← Previous';
+
+    const heading = document.createElement('h3');
+    heading.className = 'font-headline-md text-primary';
+    heading.style.margin = '0';
+
+    const nextButton = document.createElement('button');
+    nextButton.className = 'btn-secondary';
+    nextButton.textContent = 'Next →';
+
+    toolbar.append(prevButton, heading, nextButton);
+    container.appendChild(toolbar);
+
+    const grid = document.createElement('div');
+    grid.className = 'calendar-grid';
+    grid.style.cssText =
+        'display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;';
+
+    container.appendChild(grid);
+
+    const schedulePanel = document.createElement('div');
+    schedulePanel.style.marginTop = '24px';
+
+    const scheduleTitle = document.createElement('h3');
+    scheduleTitle.className = 'font-headline-md text-primary';
+
+    const scheduleCount = document.createElement('p');
+    scheduleCount.className = 'text-secondary';
+
+    const scheduleList = document.createElement('div');
+
+    schedulePanel.append(scheduleTitle, scheduleCount, scheduleList);
+    container.appendChild(schedulePanel);
+
+    function drawMonth() {
+        heading.textContent =
+            `${MONTH_NAMES[overallCalendarMonth]} ${overallCalendarYear}`;
+
+        grid.innerHTML = '';
+
+        ['M', 'T', 'W', 'T', 'F', 'S', 'S'].forEach(day => {
+            const label = document.createElement('div');
+            label.className = 'calendar-day-label';
+            label.textContent = day;
+            grid.appendChild(label);
+        });
+
+        const firstDay = new Date(
+            overallCalendarYear,
+            overallCalendarMonth,
+            1
+        );
+
+        let offset = firstDay.getDay() - 1;
+        if (offset < 0) offset = 6;
+
+        const totalDays = new Date(
+            overallCalendarYear,
+            overallCalendarMonth + 1,
+            0
+        ).getDate();
+
+        const today = new Date();
+
+        for (let i = 0; i < offset; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'calendar-day empty';
+            grid.appendChild(empty);
+        }
+
+        for (let day = 1; day <= totalDays; day++) {
+            const dateStr =
+                `${overallCalendarYear}-${String(overallCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+            const dayCell = document.createElement('button');
+            dayCell.type = 'button';
+            dayCell.className = 'calendar-day';
+            dayCell.style.cssText = 'width:100%;';
+
+            if (
+                day === today.getDate() &&
+                overallCalendarMonth === today.getMonth() &&
+                overallCalendarYear === today.getFullYear()
+            ) {
+                dayCell.classList.add('today');
+            }
+
+            const number = document.createElement('span');
+            number.textContent = day;
+            dayCell.appendChild(number);
+
+            const dayAppointments = allAppointments.filter(appt =>
+                String(appt.date || '').slice(0, 10) === dateStr
+            );
+
+            if (dayAppointments.length) {
+                const dots = document.createElement('div');
+                dots.className = 'calendar-appt-dots';
+
+                for (let i = 0; i < Math.min(dayAppointments.length, 3); i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'calendar-appt-dot';
+                    dots.appendChild(dot);
+                }
+
+                if (dayAppointments.length > 3) {
+                    const more = document.createElement('div');
+                    more.className = 'calendar-appt-dot dot-more';
+                    more.title = `+${dayAppointments.length - 3} more`;
+                    dots.appendChild(more);
+                }
+
+                dayCell.appendChild(dots);
+            }
+
+            dayCell.addEventListener('click', () => {
+                grid.querySelectorAll('.calendar-day.active').forEach(cell =>
+                    cell.classList.remove('active')
+                );
+
+                dayCell.classList.add('active');
+
+                const formatted = new Date(
+                    overallCalendarYear,
+                    overallCalendarMonth,
+                    day
+                ).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+
+                scheduleTitle.textContent = `Schedule for ${formatted}`;
+                scheduleCount.textContent =
+                    `${dayAppointments.length} appointment${dayAppointments.length !== 1 ? 's' : ''}`;
+
+                scheduleList.innerHTML = '';
+
+                if (!dayAppointments.length) {
+                    const emptyMessage = document.createElement('p');
+                    emptyMessage.className = 'text-secondary';
+                    emptyMessage.textContent =
+                        'No appointments scheduled for this day.';
+                    scheduleList.appendChild(emptyMessage);
+                    return;
+                }
+
+                dayAppointments.forEach(appt => {
+                    const entry = document.createElement('div');
+                    entry.className = 'day-schedule-entry';
+
+                    const details = document.createElement('div');
+
+                    const name = document.createElement('p');
+                    name.className = 'schedule-entry-name';
+                    name.textContent = appt.patientName || 'Patient';
+
+                    const purpose = document.createElement('p');
+                    purpose.className = 'schedule-entry-purpose';
+                    purpose.textContent = appt.purpose || 'Consultation';
+
+                    
+const time = document.createElement('p');
+time.className = 'schedule-entry-time';
+time.textContent = appt.time || 'Time not set';
+
+
+const room = document.createElement('span');
+room.className = 'schedule-entry-room';
+room.textContent = `📍 ${appt.room || 'Unassigned'}`;
+room.style.cssText = `
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #22c55e;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+`;
+
+
+details.append(name, purpose, time, room);
+entry.appendChild(details);
+
+
+                    
+const status = document.createElement('span');
+status.className = 'status-badge';
+status.textContent = appt.status || 'Active';
+
+const completeButton = document.createElement('button');
+completeButton.type = 'button';
+completeButton.className = 'btn-secondary';
+completeButton.textContent =
+    appt.status?.toLowerCase() === 'completed'
+        ? 'Completed ✓'
+        : 'Mark Completed';
+
+completeButton.disabled =
+    appt.status?.toLowerCase() === 'completed';
+
+completeButton.addEventListener('click', async () => {
+    try {
+        completeButton.disabled = true;
+
+        const response = await fetch(
+            `/api/appointments/${encodeURIComponent(appt.id)}/status`,
+            {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 'Completed' })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Could not update appointment.');
+        }
+
+        appt.status = 'Completed';
+        status.textContent = 'Completed';
+        completeButton.textContent = 'Completed ✓';
+
+        showToast('Appointment marked as completed.');
+
+        // Refresh the appointment list if this function exists.
+        if (typeof loadAllAppointments === 'function') {
+            await loadAllAppointments();
+        }
+    } catch (error) {
+        console.error('Appointment completion failed:', error);
+        showToast(error.message || 'Could not update appointment.');
+        completeButton.disabled = false;
+    }
+});
+
+const openButton = document.createElement('button');
+openButton.type = 'button';
+openButton.className = 'btn-secondary';
+openButton.textContent = 'Open Case Sheet';
+
+openButton.addEventListener('click', () => {
+    const patient = patients.find(p =>
+        String(p.refId) === String(appt.patientRef)
+    );
+
+    if (patient) {
+        loadPatientData(patient);
+        switchToTab('caseSheets');
+        showToast(`Loaded ${patient.name}'s Case Sheet`);
+    } else {
+        showToast('Patient record could not be found.');
+    }
+});
+
+entry.append(status, completeButton, openButton);
+scheduleList.appendChild(entry);
+
+                });
+            });
+
+            grid.appendChild(dayCell);
+        }
+    }
+    
+
+    prevButton.addEventListener('click', () => {
+        overallCalendarMonth--;
+
+        if (overallCalendarMonth < 0) {
+            overallCalendarMonth = 11;
+            overallCalendarYear--;
+        }
+
+        drawMonth();
+    });
+
+    nextButton.addEventListener('click', () => {
+        overallCalendarMonth++;
+
+        if (overallCalendarMonth > 11) {
+            overallCalendarMonth = 0;
+            overallCalendarYear++;
+        }
+
+        drawMonth();
+    });
+
+    drawMonth();
+}
+
+
+ // Show appointments for a day, optionally filtered to one patient.
+function showDaySchedule(dateStr, patientRef = null) {
     const panel = document.getElementById('day-schedule-panel');
     const titleEl = document.getElementById('day-schedule-title');
     const countEl = document.getElementById('day-schedule-count');
     const listEl = document.getElementById('day-schedule-list');
 
-    const formatted = formatApptDate(dateStr, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-    titleEl.textContent = `Schedule for ${formatted}`;
+    if (!panel || !titleEl || !countEl || !listEl) return;
 
-    const dayAppts = allAppointments.filter(a => a.date === dateStr);
-    countEl.textContent = `${dayAppts.length} appointment${dayAppts.length !== 1 ? 's' : ''}`;
+    const formatted = formatApptDate(dateStr, {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+    });
+
+    
+const dayAppts = allAppointments.filter(appt =>
+    String(appt.date || '').slice(0, 10) === dateStr &&
+    (
+        patientRef == null ||
+        String(appt.patientRef) === String(patientRef)
+    )
+);
+
+
+    titleEl.textContent = `Schedule for ${formatted}`;
+    countEl.textContent =
+        `${dayAppts.length} appointment${dayAppts.length !== 1 ? 's' : ''}`;
 
     if (dayAppts.length === 0) {
-        listEl.innerHTML = '<p class="text-secondary" style="text-align:center;font-style:italic;padding:24px 0;">No appointments scheduled for this day.</p>';
+        listEl.innerHTML = `
+            <p class="text-secondary"
+               style="text-align:center;font-style:italic;padding:24px 0;">
+                No appointments scheduled for this day.
+            </p>`;
         return;
     }
 
-    // Sort by time
-    const timeOrder = { 'AM': 0, 'PM': 12 };
-    dayAppts.sort((a, b) => {
-        const parseTime = t => {
-            if (!t) return 0;
-            const [timePart, period] = t.split(' ');
-            const [h, m] = timePart.split(':').map(Number);
-            return (period === 'PM' && h !== 12 ? h + 12 : h) * 60 + m;
-        };
-        return parseTime(a.time) - parseTime(b.time);
-    });
+    const parseTime = time => {
+        if (!time) return 0;
+
+        const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (!match) return 0;
+
+        let hours = Number(match[1]);
+        const minutes = Number(match[2]);
+        const period = match[3].toUpperCase();
+
+        if (period === 'AM' && hours === 12) hours = 0;
+        if (period === 'PM' && hours !== 12) hours += 12;
+
+        return hours * 60 + minutes;
+    };
+
+    dayAppts.sort((a, b) => parseTime(a.time) - parseTime(b.time));
 
     listEl.innerHTML = '';
+
     dayAppts.forEach(appt => {
         const entry = document.createElement('div');
         entry.className = 'day-schedule-entry';
-        entry.innerHTML = `
-            <div class="schedule-entry-left">
-                <span class="schedule-entry-time">${appt.time || 'TBD'}</span>
-                <div>
-                    <p class="schedule-entry-name">${appt.patientName}</p>
-                    <p class="schedule-entry-purpose">${appt.purpose}</p>
-                </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;">
-                <span class="status-badge ${appt.status?.toLowerCase() === 'inactive' ? 'inactive' : ''}">${appt.status || 'Active'}</span>
-                <button class="btn-secondary font-label-sm" style="padding:6px 12px;font-size:10px;" data-ref="${appt.patientRef}">
-                    Open Case Sheet
-                </button>
-            </div>
-        `;
 
-        // Click to open case sheet
-        entry.querySelector('button').addEventListener('click', () => {
-            const patient = patients.find(p => p.refId === appt.patientRef);
-            if (patient) {
-                loadPatientData(patient);
-                switchToTab('caseSheets');
-                showToast(`Loaded ${patient.name}'s Case Sheet`);
-            }
-        });
+        const name = document.createElement('p');
+        name.className = 'schedule-entry-name';
+        name.textContent = appt.patientName || 'Patient';
 
+        const purpose = document.createElement('p');
+        purpose.className = 'schedule-entry-purpose';
+        purpose.textContent = appt.purpose || 'Consultation';
+        
+
+
+
+const room = document.createElement('span');
+room.className = 'schedule-entry-room';
+room.textContent = `📍 ${appt.room || 'Unassigned'}`;
+room.style.cssText = `
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #22c55e;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+`;
+
+
+
+        const time = document.createElement('span');
+        time.className = 'schedule-entry-time';
+        time.textContent = appt.time || 'TBD';
+
+        const left = document.createElement('div');
+        left.className = 'schedule-entry-left';
+
+        const details = document.createElement('div');
+        details.append(name, purpose, room);
+        left.append(time, details);
+
+        const right = document.createElement('div');
+        right.style.cssText = 'display:flex;align-items:center;gap:12px;';
+
+        const status = document.createElement('span');
+        status.className = 'status-badge';
+        if (appt.status?.toLowerCase() === 'inactive') {
+            status.classList.add('inactive');
+        }
+        status.textContent = appt.status || 'Active';
+
+        right.appendChild(status);
+
+        // The overall calendar can open any patient's case sheet.
+        // A patient-specific calendar does not need this button.
+        if (!patientRef) {
+            const button = document.createElement('button');
+            button.className = 'btn-secondary font-label-sm';
+            button.style.cssText = 'padding:6px 12px;font-size:10px;';
+            button.textContent = 'Open Case Sheet';
+
+            button.addEventListener('click', () => {
+                const patient = patients.find(
+                    p => String(p.refId) === String(appt.patientRef)
+                );
+
+                if (patient) {
+                    loadPatientData(patient);
+                    switchToTab('caseSheets');
+                    showToast(`Loaded ${patient.name}'s Case Sheet`);
+                }
+            });
+
+            right.appendChild(button);
+        }
+
+        entry.append(left, right);
         listEl.appendChild(entry);
     });
 }
@@ -1708,31 +2248,55 @@ function filterDirectoryBySidebar(filter) {
     renderPatientDirectory(searchTerm);
 }
 
+
+
 function switchToTab(tabName) {
-    localStorage.setItem('luna-active-tab', tabName);
     const tabs = {
         caseSheets: document.getElementById('tab-case-sheets'),
-        patientList: document.getElementById('tab-patient-list')
+        patientList: document.getElementById('tab-patient-list'),
+        calendar: document.getElementById('tab-calendar')
     };
+
     const views = {
-        caseSheet: document.getElementById('case-sheet-view'),
-        patientList: document.getElementById('patient-list-view')
+        caseSheets: document.getElementById('case-sheet-view'),
+        patientList: document.getElementById('patient-list-view'),
+        calendar: document.getElementById('overall-calendar-view')
     };
+
+    if (!tabs[tabName] || !views[tabName]) {
+        tabName = 'patientList';
+    }
+
+    localStorage.setItem('luna-active-tab', tabName);
+
+
     const sbDirectory = document.getElementById('sidebar-nav-directory');
     const sbCaseSheet = document.getElementById('sidebar-nav-casesheet');
     const sbCaseSections = document.getElementById('sidebar-casesheet-sections');
     const sbDirFilters = document.getElementById('sidebar-directory-filters');
     const sidebarNav = document.getElementById('sidebar-nav');
 
-    // Ensure sidebar is always flex layout in desktop Doctor Portal view
+    if (!tabs[tabName] || !views[tabName]) {
+        tabName = 'patientList';
+    }
+
     if (sidebarNav) sidebarNav.style.display = 'flex';
 
-    if (tabName === 'caseSheets') {
-        if (tabs.caseSheets) tabs.caseSheets.classList.add('active');
-        if (tabs.patientList) tabs.patientList.classList.remove('active');
-        if (views.caseSheet) views.caseSheet.style.display = 'block';
-        if (views.patientList) views.patientList.style.display = 'none';
+    // Update active tab and visible view.
+    Object.entries(tabs).forEach(([key, element]) => {
+        if (element) {
+            element.classList.toggle('active', key === tabName);
+        }
+    });
 
+    Object.entries(views).forEach(([key, element]) => {
+        if (element) {
+            element.style.display = key === tabName ? 'block' : 'none';
+        }
+    });
+
+    // Sidebar state.
+    if (tabName === 'caseSheets') {
         if (sbCaseSheet) sbCaseSheet.classList.add('active');
         if (sbDirectory) sbDirectory.classList.remove('active');
         if (sbCaseSections) sbCaseSections.style.display = 'block';
@@ -1740,17 +2304,11 @@ function switchToTab(tabName) {
 
         setTimeout(() => {
             if (sliderContainer) {
-                const width = sliderContainer.getBoundingClientRect().width;
-                const left = sliderContainer.getBoundingClientRect().left;
-                setSliderPosition(width / 2 + left);
+                const rect = sliderContainer.getBoundingClientRect();
+                setSliderPosition(rect.width / 2 + rect.left);
             }
         }, 50);
-    } else {
-        if (tabs.patientList) tabs.patientList.classList.add('active');
-        if (tabs.caseSheets) tabs.caseSheets.classList.remove('active');
-        if (views.caseSheet) views.caseSheet.style.display = 'none';
-        if (views.patientList) views.patientList.style.display = 'block';
-
+    } else if (tabName === 'patientList') {
         if (sbDirectory) sbDirectory.classList.add('active');
         if (sbCaseSheet) sbCaseSheet.classList.remove('active');
         if (sbCaseSections) sbCaseSections.style.display = 'none';
@@ -1759,13 +2317,28 @@ function switchToTab(tabName) {
         loadPatientsFromServer().then(() => {
             renderPatientDirectory();
             updateSidebarMetrics();
+        }).catch(err => {
+            console.error('Failed to load patient directory:', err);
         });
+    } else {
+        // Overall Calendar: hide patient-specific sidebar sections.
+        if (sbDirectory) sbDirectory.classList.remove('active');
+        if (sbCaseSheet) sbCaseSheet.classList.remove('active');
+        if (sbCaseSections) sbCaseSections.style.display = 'none';
+        if (sbDirFilters) sbDirFilters.style.display = 'none';
+
+        loadAllAppointments();
     }
+
     updateSidebarMetrics();
 }
 
+
 document.getElementById('tab-case-sheets')?.addEventListener('click', () => switchToTab('caseSheets'));
 document.getElementById('tab-patient-list')?.addEventListener('click', () => switchToTab('patientList'));
+document.getElementById('tab-calendar')?.addEventListener('click', () => {
+    switchToTab('calendar');
+});
 
 // ─── PATIENT DIRECTORY ────────────────────────────────────────
 function renderPatientDirectory(filteredSearch = '') {
@@ -2052,36 +2625,85 @@ document.querySelectorAll('.modal-close').forEach(btn => {
 });
 
 // ─── RESCHEDULE / BOOKING MODAL ───────────────────────────────
-document.getElementById('reschedule-btn')?.addEventListener('click', () => {
-    const modal = document.getElementById('reschedule-modal');
+document.getElementById('reschedule-btn')?.addEventListener('click', async () => {
     const dateInput = document.getElementById('modal-date-input');
     const purposeInput = document.getElementById('modal-purpose-input');
     const timeSelect = document.getElementById('modal-time-select');
+    const durationSelect = document.getElementById('modal-duration-select');
 
     if (activePatient?.appointment) {
         dateInput.value = activePatient.appointment.date || '';
         purposeInput.value = activePatient.appointment.purpose || '';
-        for (let opt of timeSelect.options) {
-            if (opt.value === activePatient.appointment.time) opt.selected = true;
+
+        if (durationSelect) {
+            durationSelect.value = String(
+                activePatient.appointment.duration || 60
+            );
+        }
+
+        // Restore the saved appointment time.
+        if (timeSelect) {
+            updateModalTimeSlots();
+
+            for (const opt of timeSelect.options) {
+                if (opt.value === activePatient.appointment.time) {
+                    opt.selected = true;
+                    break;
+                }
+            }
         }
     }
+
     openModal('reschedule-modal');
+
+    // Load rooms for the selected date, time, and duration.
+    await updateAvailableRoomOptions();
+
+    // Restore the previous room only if it is still available.
+    const roomSelect = document.getElementById('appointment-room-select');
+    const savedRoom = activePatient?.appointment?.room;
+
+    if (roomSelect && savedRoom) {
+        const roomExists = Array.from(roomSelect.options)
+            .some(option => option.value === savedRoom);
+
+        if (roomExists) {
+            roomSelect.value = savedRoom;
+        }
+    }
+});
+document.getElementById('schedule-followup-header-btn')?.addEventListener('click', async () => {
+    openModal('reschedule-modal');
+
+    await updateAvailableRoomOptions();
 });
 
-document.getElementById('schedule-followup-header-btn')?.addEventListener('click', () => {
-    openModal('reschedule-modal');
-});
 
 document.getElementById('confirm-booking-btn')?.addEventListener('click', async () => {
     if (!activePatient?.appointment) {
         showToast('Please select a date on the calendar first.', 'error');
         return;
     }
+
+    const roomSelect = document.getElementById('appointment-room-select');
+    const selectedRoom = roomSelect?.value;
+
+    if (!selectedRoom) {
+        showToast('Please select an appointment room.', 'error');
+        return;
+    }
+
+    // Keep the selected room with the appointment.
+    activePatient.appointment.room = selectedRoom;
+
     saveCurrentInputsToMemory();
+
     await savePatientToServer(activePatient);
     saveCustomPatientToLocalStorage(activePatient);
+
     showToast(`Appointment confirmed for ${activePatient.name}.`);
 });
+
 
 document.getElementById('modal-save-btn')?.addEventListener('click', async () => {
     const saveButton = document.getElementById('modal-save-btn');
@@ -2092,6 +2714,16 @@ document.getElementById('modal-save-btn')?.addEventListener('click', async () =>
     const date = document.getElementById('modal-date-input').value;
     const time = document.getElementById('modal-time-select').value;
     const purpose = document.getElementById('modal-purpose-input').value;
+    const duration = Number(
+    document.getElementById('modal-duration-select')?.value || 60
+);
+const roomSelect = document.getElementById('appointment-room-select');
+const selectedRoom = roomSelect?.value;
+
+if (!selectedRoom) {
+    showToast('Please select an available appointment room.', 'error');
+    return;
+}
 
     if (!date) {
         showToast('Please select a date.', 'error');
@@ -2104,13 +2736,23 @@ document.getElementById('modal-save-btn')?.addEventListener('click', async () =>
     saveButton.textContent = 'Saving...';
 
     try {
-        if (!activePatient.appointment) {
-            activePatient.appointment = { date, time, purpose };
-        } else {
-            activePatient.appointment.date = date;
-            activePatient.appointment.time = time;
-            activePatient.appointment.purpose = purpose;
-        }
+        
+if (!activePatient.appointment) {
+    activePatient.appointment = {
+        date,
+        time,
+        purpose,
+        duration,
+    room: selectedRoom
+    };
+} else {
+    activePatient.appointment.date = date;
+    activePatient.appointment.time = time;
+    activePatient.appointment.purpose = purpose;
+    activePatient.appointment.duration = duration;
+    activePatient.appointment.room = selectedRoom;
+}
+
 
         const parsed = parseApptDate(date);
 
@@ -2127,13 +2769,32 @@ document.getElementById('modal-save-btn')?.addEventListener('click', async () =>
             });
 
         document.getElementById('schedule-time-text').textContent =
-            `${time} — ${purpose}`;
+    `${time} — ${purpose}`;
 
         saveCurrentInputsToMemory();
 
-        await savePatientToServer(activePatient);
+        
 
-        saveCustomPatientToLocalStorage(activePatient);
+const savedPatient = await savePatientToServer(activePatient);
+
+// Update the appointment using the backend response.
+if (savedPatient?.appointment) {
+    activePatient.appointment = {
+        ...activePatient.appointment,
+        ...savedPatient.appointment
+    };
+}
+
+const savedAppointment = activePatient.appointment;
+const assignedRoom = savedAppointment?.room;
+
+document.getElementById('schedule-time-text').textContent =
+    `${savedAppointment?.time || time} — ${savedAppointment?.purpose || purpose}` +
+    (assignedRoom ? ` · ${assignedRoom}` : '') +
+    ` · ${savedAppointment?.duration || 60} mins`;
+
+saveCustomPatientToLocalStorage(activePatient);
+
 
         // Move calendar to the newly scheduled appointment date
         const savedApptDate = parseApptDate(date);
@@ -2144,7 +2805,12 @@ document.getElementById('modal-save-btn')?.addEventListener('click', async () =>
         }
 
         renderCalendar();
-        showDaySchedule(date);
+
+if (activePatient?.refId != null) {
+    showDaySchedule(date, activePatient.refId);
+} else {
+    showDaySchedule(date);
+}
 
         closeModal('reschedule-modal');
 
@@ -2155,18 +2821,19 @@ document.getElementById('modal-save-btn')?.addEventListener('click', async () =>
             })}.`
         );
 
-    } catch (error) {
-        console.error('Failed to save appointment:', error);
+    
+} catch (error) {
+    console.error('Failed to save appointment:', error);
 
-        showToast(
-            'Failed to save appointment. Please try again.',
-            'error'
-        );
-    } finally {
-        // Always unlock the button
-        saveButton.disabled = false;
-        saveButton.textContent = originalButtonText;
-    }
+    showToast(
+        error.message || 'Failed to save appointment. Please try again.',
+        'error'
+    );
+} finally {
+    saveButton.disabled = false;
+    saveButton.textContent = originalButtonText;
+}
+
 });
 // Helper for selecting 1 of 4 core service cards in modal
 function selectModalServiceCard(cardEl, serviceName) {
@@ -2175,6 +2842,120 @@ function selectModalServiceCard(cardEl, serviceName) {
     const input = document.getElementById('modal-purpose-input');
     if (input) input.value = serviceName;
 }
+
+
+
+async function updateAvailableRoomOptions() {
+    const roomSelect = document.getElementById('appointment-room-select');
+    const helpText = document.getElementById('appointment-room-help');
+
+    const date = document.getElementById('modal-date-input')?.value;
+    const time = document.getElementById('modal-time-select')?.value;
+    const duration = document.getElementById('modal-duration-select')?.value;
+
+    if (!roomSelect) return;
+
+    if (!date || !time || !duration) {
+        roomSelect.innerHTML =
+            '<option value="">Select date, time and duration first</option>';
+        roomSelect.disabled = true;
+
+        if (helpText) {
+            helpText.textContent =
+                'Select a date, time, and duration to check room availability.';
+        }
+        return;
+    }
+
+    const previousRoom = roomSelect.value;
+    roomSelect.disabled = true;
+    roomSelect.innerHTML =
+        '<option value="">Checking availability...</option>';
+
+    if (helpText) {
+        helpText.textContent = 'Checking available rooms...';
+    }
+
+    try {
+        const params = new URLSearchParams({ date, time, duration });
+
+        if (activePatient?.refId) {
+            params.set('patientRef', activePatient.refId);
+        }
+
+        const response = await fetch(
+            `/api/available-rooms?${params.toString()}`
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || 'Unable to check room availability.'
+            );
+        }
+
+        const availableRooms = Array.isArray(data.availableRooms)
+            ? data.availableRooms
+            : [];
+
+        roomSelect.innerHTML = '';
+
+        if (availableRooms.length === 0) {
+            roomSelect.add(new Option('No rooms available', ''));
+            roomSelect.disabled = true;
+
+            if (helpText) {
+                helpText.textContent =
+                    'All four rooms are occupied. Choose another time.';
+            }
+            return;
+        }
+
+        roomSelect.add(new Option('Select a room', ''));
+
+        availableRooms.forEach(room => {
+            roomSelect.add(new Option(room, room));
+        });
+
+        if (availableRooms.includes(previousRoom)) {
+            roomSelect.value = previousRoom;
+        } else if (
+            activePatient?.appointment?.room &&
+            availableRooms.includes(activePatient.appointment.room)
+        ) {
+            roomSelect.value = activePatient.appointment.room;
+        }
+
+        roomSelect.disabled = false;
+
+        if (helpText) {
+            helpText.textContent =
+                `${availableRooms.length} room(s) available for this time.`;
+        }
+    } catch (error) {
+        console.error('Room availability check failed:', error);
+
+        roomSelect.innerHTML =
+            '<option value="">Unable to load rooms — try changing the slot</option>';
+        roomSelect.disabled = true;
+
+        if (helpText) {
+            helpText.textContent =
+                error.message || 'Unable to check room availability.';
+        }
+    }
+}
+
+document.getElementById('modal-date-input')
+    ?.addEventListener('change', updateAvailableRoomOptions);
+
+document.getElementById('modal-time-select')
+    ?.addEventListener('change', updateAvailableRoomOptions);
+
+document.getElementById('modal-duration-select')
+    ?.addEventListener('change', updateAvailableRoomOptions);
+
+
 
 // Configurable time slot generator based on duration selection
 function updateModalTimeSlots() {
@@ -2202,19 +2983,58 @@ document.getElementById('add-procedure-btn')?.addEventListener('click', () => {
     openModal('procedure-modal');
 });
 
+
 document.getElementById('proc-save-btn')?.addEventListener('click', async () => {
+    const saveBtn = document.getElementById('proc-save-btn');
+
     const name = document.getElementById('proc-name-input').value.trim();
     const date = document.getElementById('proc-date-input').value;
     const clinic = document.getElementById('proc-clinic-input').value.trim();
 
-    if (!name || !date) { showToast('Procedure name and date are required.', 'error'); return; }
+    if (!name || !date) {
+        showToast('Procedure name and date are required.', 'error');
+        return;
+    }
 
-    activePatient.procedures.push({ name, date, clinic });
-    await savePatientToServer(activePatient);
-    renderProceduresTable();
-    closeModal('procedure-modal');
-    showToast(`Procedure "${name}" added to cosmetic history.`);
+    // Prevent duplicate clicks while saving.
+    if (saveBtn.disabled) return;
+
+    const originalButtonText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = `
+        <span class="material-symbols-outlined" style="font-size:16px;">
+            progress_activity
+        </span>
+        Saving...
+    `;
+
+    try {
+        activePatient.procedures.push({ name, date, clinic });
+
+        await savePatientToServer(activePatient, {
+    refreshAppointments: false
 });
+
+        renderProceduresTable();
+        closeModal('procedure-modal');
+
+        showToast(`Procedure "${name}" added to cosmetic history.`);
+    } catch (error) {
+        console.error('Failed to save historical procedure:', error);
+
+        // Remove the unsaved entry from the local array.
+        activePatient.procedures.pop();
+
+        showToast(
+            'Unable to save the procedure. Please try again.',
+            'error'
+        );
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalButtonText;
+    }
+}); 
+
 
 // ─── ADD LOG ENTRY MODAL ──────────────────────────────────────
 document.getElementById('add-log-entry-btn')?.addEventListener('click', () => {
