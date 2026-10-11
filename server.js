@@ -1,8 +1,8 @@
 require('dotenv').config();
 
 
-console.log('🔍 DATABASE_URL loaded:', !!process.env.DATABASE_URL);
-console.log('🔍 DATABASE_URL prefix:', process.env.DATABASE_URL?.substring(0, 25));
+// console.log('🔍 DATABASE_URL loaded:', !!process.env.DATABASE_URL);
+// console.log('🔍 DATABASE_URL prefix:', process.env.DATABASE_URL?.substring(0, 25));
 
 
 
@@ -41,71 +41,71 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 
 
-// ─── Appointment Email Helper ─────────────────────────────────
-async function sendAppointmentEmail({
-    to,
-    subject,
-    patientName,
-    patientPhone,
-    patientEmail,
-    date,
-    time,
-    purpose,
-    message = '',
-    action = 'Appointment Scheduled'
-}) {
-    if (!to) {
-        console.log('📧 Email skipped: no recipient email address.');
-        return { sent: false, skipped: true };
-    }
-
-    const mailOptions = {
-        from: `"Luna Skin Aesthetic" <${process.env.SMTP_USER}>`,
+    // ─── Appointment Email Helper ─────────────────────────────────
+    async function sendAppointmentEmail({
         to,
         subject,
-        text: `
-Luna Skin Aesthetic
-Appointment Notification
+        patientName,
+        patientPhone,
+        patientEmail,
+        date,
+        time,
+        purpose,
+        message = '',
+        action = 'Appointment Scheduled'
+    }) {
+        if (!to) {
+            console.log('📧 Email skipped: no recipient email address.');
+            return { sent: false, skipped: true };
+        }
 
-${action}
+        const mailOptions = {
+            from: `"Luna Skin Aesthetic" <${process.env.SMTP_USER}>`,
+            to,
+            subject,
+            text: `
+    Luna Skin Aesthetic
+    Appointment Notification
 
-Patient Name: ${patientName || 'N/A'}
-Phone: ${patientPhone || 'N/A'}
-Patient Email: ${patientEmail || 'N/A'}
+    ${action}
 
-Appointment Date: ${date || 'Not specified'}
-Appointment Time: ${time || 'Not specified'}
-Service / Purpose: ${purpose || 'Consultation'}
+    Patient Name: ${patientName || 'N/A'}
+    Phone: ${patientPhone || 'N/A'}
+    Patient Email: ${patientEmail || 'N/A'}
 
-${message ? `Message: ${message}` : ''}
+    Appointment Date: ${date || 'Not specified'}
+    Appointment Time: ${time || 'Not specified'}
+    Service / Purpose: ${purpose || 'Consultation'}
 
-Regards,
-Luna Skin Aesthetic
-Tirunelveli
-        `.trim()
-    };
+    ${message ? `Message: ${message}` : ''}
 
-    try {
-        const info = await mailTransporter.sendMail(mailOptions);
-
-        console.log(
-            `📧 Appointment email sent to ${to} | Message ID: ${info.messageId}`
-        );
-
-        return {
-            sent: true,
-            messageId: info.messageId
+    Regards,
+    Luna Skin Aesthetic
+    Tirunelveli
+            `.trim()
         };
 
-    } catch (error) {
-        console.error(`❌ Failed to send appointment email to ${to}:`, error);
+        try {
+            const info = await mailTransporter.sendMail(mailOptions);
 
-        return {
-            sent: false,
-            error: error.message
-        };
+            console.log(
+                `📧 Appointment email sent to ${to} | Message ID: ${info.messageId}`
+            );
+
+            return {
+                sent: true,
+                messageId: info.messageId
+            };
+
+        } catch (error) {
+            console.error(`❌ Failed to send appointment email to ${to}:`, error);
+
+            return {
+                sent: false,
+                error: error.message
+            };
+        }
     }
-}
 
 // Dynamic writable directory setup (safe for Vercel / serverless read-only filesystems)
 function getWritableDir(dirName) {
@@ -1083,7 +1083,9 @@ app.post('/api/auth/register', async (req, res) => {
 // GET /api/appointments — Aggregate all patient appointments
 // ─── ALL APPOINTMENTS ROUTE (For Doctor Calendar) ────────────────────────────
 
-// GET /api/appointments — Read all appointments from PostgreSQL
+
+ // GET /api/appointments — Read all appointments from PostgreSQL
+
 app.get('/api/appointments', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -1091,39 +1093,88 @@ app.get('/api/appointments', async (req, res) => {
                 a.id,
                 a.patient_ref,
                 p.name AS patient_name,
-                p.status,
+                p.status AS patient_status,
+                a.status AS appointment_status,
                 TO_CHAR(a.appointment_date, 'YYYY-MM-DD') AS appointment_date,
                 a.appointment_time,
                 a.purpose,
+                a.room,
+                a.duration_minutes,
                 a.created_at
             FROM appointments a
             INNER JOIN patients p
                 ON p.ref_id = a.patient_ref
-            ORDER BY a.appointment_date ASC, a.created_at ASC
+            ORDER BY
+                CASE
+                    WHEN LOWER(COALESCE(a.status, 'active')) = 'completed'
+                    THEN 1 ELSE 0
+                END,
+                a.appointment_date ASC,
+                a.appointment_time ASC,
+                a.created_at ASC
         `);
 
         const appointments = result.rows.map(row => ({
             id: row.id,
             patientName: row.patient_name,
             patientRef: row.patient_ref,
-            date: row.appointment_date || "",
-            time: row.appointment_time || "TBD",
-            purpose: row.purpose || "Consultation",
-            status: row.status || "Active"
+            date: row.appointment_date || '',
+            time: row.appointment_time || 'TBD',
+            purpose: row.purpose || 'Consultation',
+            room: row.room || 'Unassigned',
+            duration: row.duration_minutes || 60,
+            status: row.appointment_status || 'Active'
         }));
 
-        console.log(`📅 Doctor calendar loaded ${appointments.length} appointment(s)`);
-
         return res.json(appointments);
-
     } catch (error) {
-        console.error('❌ Failed to load appointments:', error);
-
+        console.error('Failed to load appointments:', error);
         return res.status(500).json({
-            error: "Unable to load appointments."
+            error: 'Unable to load appointments.'
         });
     }
 });
+
+app.patch('/api/appointments/:id/status', async (req, res) => {
+    try {
+        console.log('PATCH appointment status route reached:', req.params.id);
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!['Active', 'Completed'].includes(status)) {
+            return res.status(400).json({
+                error: 'Status must be Active or Completed.'
+            });
+        }
+
+        const result = await pool.query(
+            `UPDATE appointments
+             SET status = $1
+             WHERE id = $2
+             RETURNING id, status`,
+            [status, id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({
+                error: 'Appointment not found.'
+            });
+        }
+
+        return res.json({
+            success: true,
+            id: result.rows[0].id,
+            status: result.rows[0].status
+        });
+    } catch (error) {
+        console.error('Failed to update appointment status:', error);
+        return res.status(500).json({
+            error: 'Unable to update appointment status.'
+        });
+    }
+});
+
+
 
 // ─── PATIENT ROUTES ──────────────────────────────────────────────────────────
 
@@ -1132,68 +1183,138 @@ app.get('/api/appointments', async (req, res) => {
 //     res.json(data);
 // });
 
+
 app.get('/api/patients', async (req, res) => {
     try {
+        // 1. Fetch all patients first.
         const patientsResult = await pool.query(`
             SELECT *
             FROM patients
             ORDER BY created_at DESC
         `);
 
-        const patients = [];
+        const patientRows = patientsResult.rows;
 
-        for (const patient of patientsResult.rows) {
-            const proceduresResult = await pool.query(`
+        if (patientRows.length === 0) {
+            return res.json([]);
+        }
+
+        // Collect patient references for batch queries.
+        const patientRefs = patientRows.map(patient => patient.ref_id);
+
+        // 2. Fetch related records in parallel instead of querying
+        // separately for every patient.
+        const [
+            proceduresResult,
+            logsResult,
+            skincareResult,
+            concernsResult,
+            appointmentsResult
+        ] = await Promise.all([
+            pool.query(`
                 SELECT
+                    patient_ref,
                     name,
-                    procedure_date,
+                    TO_CHAR(procedure_date, 'YYYY-MM-DD') AS procedure_date,
                     clinic
                 FROM patient_procedures
-                WHERE patient_ref = $1
+                WHERE patient_ref = ANY($1::varchar[])
                 ORDER BY procedure_date ASC, id ASC
-            `, [patient.ref_id]);
+            `, [patientRefs]),
 
-            const logsResult = await pool.query(`
+            pool.query(`
                 SELECT
-                    log_date,
+                    patient_ref,
+                    TO_CHAR(log_date, 'YYYY-MM-DD') AS log_date,
                     therapy,
                     reaction,
                     notes
                 FROM patient_treatment_logs
-                WHERE patient_ref = $1
+                WHERE patient_ref = ANY($1::varchar[])
                 ORDER BY log_date ASC, id ASC
-            `, [patient.ref_id]);
+            `, [patientRefs]),
 
-            const skincareResult = await pool.query(`
+            pool.query(`
                 SELECT
+                    patient_ref,
                     name,
                     instructions,
                     qty
                 FROM patient_skincare
-                WHERE patient_ref = $1
+                WHERE patient_ref = ANY($1::varchar[])
                 ORDER BY id ASC
-            `, [patient.ref_id]);
+            `, [patientRefs]),
 
-            const concernsResult = await pool.query(`
+            pool.query(`
                 SELECT
+                    patient_ref,
                     hyperpigmentation,
                     acne,
                     elasticity,
                     dehydration
                 FROM patient_concerns
-                WHERE patient_ref = $1
-            `, [patient.ref_id]);
+                WHERE patient_ref = ANY($1::varchar[])
+            `, [patientRefs]),
 
-            const appointmentResult = await pool.query(`
-                SELECT TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date, appointment_time, purpose
+            pool.query(`
+                SELECT DISTINCT ON (patient_ref)
+                    patient_ref,
+                    TO_CHAR(appointment_date, 'YYYY-MM-DD')
+                        AS appointment_date,
+                    appointment_time,
+                    purpose
                 FROM appointments
-                WHERE patient_ref = $1
-                ORDER BY created_at DESC
-                LIMIT 1
-            `, [patient.ref_id]);
+                WHERE patient_ref = ANY($1::varchar[])
+                ORDER BY patient_ref, created_at DESC, id DESC
+            `, [patientRefs])
+        ]);
 
-            patients.push({
-                refId: patient.ref_id,
+        // 3. Group child records by patient reference.
+        const groupByPatient = (rows) => {
+            const grouped = new Map();
+
+            for (const row of rows) {
+                if (!grouped.has(row.patient_ref)) {
+                    grouped.set(row.patient_ref, []);
+                }
+
+                grouped.get(row.patient_ref).push(row);
+            }
+
+            return grouped;
+        };
+
+        const proceduresByPatient =
+            groupByPatient(proceduresResult.rows);
+
+        const logsByPatient =
+            groupByPatient(logsResult.rows);
+
+        const skincareByPatient =
+            groupByPatient(skincareResult.rows);
+
+        const concernsByPatient =
+            new Map(
+                concernsResult.rows.map(row => [row.patient_ref, row])
+            );
+
+        const appointmentsByPatient =
+            new Map(
+                appointmentsResult.rows.map(row => [row.patient_ref, row])
+            );
+
+        // 4. Build the same response structure expected by the frontend.
+        const patients = patientRows.map(patient => {
+            const refId = patient.ref_id;
+
+            const procedures = proceduresByPatient.get(refId) || [];
+            const logs = logsByPatient.get(refId) || [];
+            const skincare = skincareByPatient.get(refId) || [];
+            const concerns = concernsByPatient.get(refId);
+            const appointment = appointmentsByPatient.get(refId);
+
+            return {
+                refId,
                 name: patient.name,
                 age: patient.age,
                 gender: patient.gender,
@@ -1214,35 +1335,31 @@ app.get('/api/patients', async (req, res) => {
                 beforeImg: patient.before_img || "",
                 afterImg: patient.after_img || "",
 
-                procedures: proceduresResult.rows.map(row => ({
+                procedures: procedures.map(row => ({
                     name: row.name || "",
-                    date: row.procedure_date
-                        ? row.procedure_date.toISOString().split('T')[0]
-                        : "",
+                    date: row.procedure_date || "",
                     clinic: row.clinic || ""
                 })),
 
-                logs: logsResult.rows.map(row => ({
-                    date: row.log_date
-                        ? row.log_date.toISOString().split('T')[0]
-                        : "",
+                logs: logs.map(row => ({
+                    date: row.log_date || "",
                     therapy: row.therapy || "",
                     reaction: row.reaction || "",
                     notes: row.notes || ""
                 })),
 
-                skincare: skincareResult.rows.map(row => ({
+                skincare: skincare.map(row => ({
                     name: row.name || "",
                     instructions: row.instructions || "",
                     qty: row.qty ?? 1
                 })),
 
-                concernsChecklist: concernsResult.rows[0]
+                concernsChecklist: concerns
                     ? {
-                        hyperpigmentation: concernsResult.rows[0].hyperpigmentation || false,
-                        acne: concernsResult.rows[0].acne || false,
-                        elasticity: concernsResult.rows[0].elasticity || false,
-                        dehydration: concernsResult.rows[0].dehydration || false
+                        hyperpigmentation: concerns.hyperpigmentation || false,
+                        acne: concerns.acne || false,
+                        elasticity: concerns.elasticity || false,
+                        dehydration: concerns.dehydration || false
                     }
                     : {
                         hyperpigmentation: false,
@@ -1251,22 +1368,22 @@ app.get('/api/patients', async (req, res) => {
                         dehydration: false
                     },
 
-                appointment: appointmentResult.rows[0]
+                appointment: appointment
                     ? {
-                       date: appointmentResult.rows[0].appointment_date || "",
-                        time: appointmentResult.rows[0].appointment_time || "",
-                        purpose: appointmentResult.rows[0].purpose || ""
+                        date: appointment.appointment_date || "",
+                        time: appointment.appointment_time || "",
+                        purpose: appointment.purpose || ""
                     }
                     : null,
 
                 assignedDoctor: patient.assigned_doctor || ""
-            });
-        }
+            };
+        });
 
         res.json(patients);
 
     } catch (error) {
-        console.error('❌ Error fetching patients:', error);
+        console.error('Error fetching patients:', error);
 
         res.status(500).json({
             error: "Unable to fetch patients."
@@ -1680,10 +1797,125 @@ app.post('/api/patients', async (req, res) => {
 //     res.json(patientsList[index]);
 // });
 
+
+app.get('/api/available-rooms', async (req, res) => {
+    try {
+        const { date, time, duration, patientRef } = req.query;
+
+        if (!date || !time || !duration) {
+            return res.status(400).json({
+                error: 'Date, time, and duration are required.'
+            });
+        }
+
+        const requestedDuration = Number(duration);
+        const allowedDurations = [30, 45, 60, 90];
+
+        if (!allowedDurations.includes(requestedDuration)) {
+            return res.status(400).json({
+                error: 'Invalid appointment duration.'
+            });
+        }
+
+        const parseTime = (value) => {
+            const match = String(value).trim().match(
+                /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
+            );
+
+            if (!match) return null;
+
+            let hours = Number(match[1]);
+            const minutes = Number(match[2]);
+            const period = match[3].toUpperCase();
+
+            if (hours < 1 || hours > 12 || minutes > 59) {
+                return null;
+            }
+
+            if (period === 'AM') {
+                if (hours === 12) hours = 0;
+            } else if (hours !== 12) {
+                hours += 12;
+            }
+
+            return hours * 60 + minutes;
+        };
+
+        const start = parseTime(time);
+
+        if (start === null) {
+            return res.status(400).json({
+                error: 'Please select a valid appointment time.'
+            });
+        }
+
+        const end = start + requestedDuration;
+
+        const withinClinicHours =
+            (start >= 540 && end <= 780) ||
+            (start >= 840 && end <= 1080);
+
+        if (!withinClinicHours) {
+            return res.status(400).json({
+                error: 'This appointment falls outside clinic hours.'
+            });
+        }
+
+        const result = await pool.query(
+            `
+            SELECT appointment_time, room, duration_minutes
+            FROM appointments
+            WHERE appointment_date = $1::date
+              AND LOWER(COALESCE(status, '')) NOT IN (
+                  'cancelled', 'canceled', 'rejected'
+              )
+              AND ($2::text IS NULL OR patient_ref <> $2)
+            `,
+            [date, patientRef || null]
+        );
+
+        const rooms = [
+            'Room 1', 'Room 2', 'Room 3', 'Room 4'
+        ];
+
+        const availableRooms = rooms.filter(room => {
+            return !result.rows.some(existing => {
+                const existingStart = parseTime(
+                    existing.appointment_time
+                );
+
+                if (existingStart === null) return false;
+
+                const existingDuration =
+                    Number(existing.duration_minutes) || 60;
+
+                const existingEnd = existingStart + existingDuration;
+
+                const overlaps =
+                    start < existingEnd &&
+                    existingStart < end;
+
+                return overlaps &&
+                    (!existing.room || existing.room === room);
+            });
+        });
+
+        return res.json({ availableRooms });
+
+    } catch (error) {
+        console.error('Failed to check room availability:', error);
+
+        return res.status(500).json({
+            error: 'Unable to check room availability.'
+        });
+    }
+});
+
+
 app.put('/api/patients/:refId', async (req, res) => {
     const refId = req.params.refId;
-
-    const client = await pool.connect();
+    const routeStartedAt = Date.now();
+    const client = await pool.connect();    
 
     try {
         // Check that the patient exists
@@ -1941,106 +2173,300 @@ app.put('/api/patients/:refId', async (req, res) => {
         }
 
 
+
+        
         let appointmentAction = null;
         let previousAppointment = null;
-        // Update the patient's existing appointment when supplied
+
+        // Process the appointment only when a date is supplied.
         if (appointment !== null && appointment.date) {
+            // Serialize room-booking checks to reduce simultaneous conflicts.
+            await client.query(`
+                SELECT pg_advisory_xact_lock(
+                    hashtext('luna-appointment-room-booking')::bigint
+                )
+            `);
+
+            const newDate = String(appointment.date).slice(0, 10);
+            const newTime = String(appointment.time || '');
+            const newPurpose = String(
+                appointment.purpose || 'Consultation'
+            );
+
+            const requestedDuration = Number(
+                appointment.duration ??
+                appointment.duration_minutes ??
+                60
+            );
+
+            const allowedDurations = [30, 45, 60, 90];
+
+            const newDuration = allowedDurations.includes(requestedDuration)
+                ? requestedDuration
+                : 60;
+
+            // Convert times such as "10:00 AM" to minutes after midnight.
+            const parseTimeToMinutes = (value) => {
+                const match = String(value || '').trim().match(
+                    /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i
+                );
+
+                if (!match) return null;
+
+                let hours = Number(match[1]);
+                const minutes = Number(match[2]);
+                const period = match[3].toUpperCase();
+
+                if (
+                    hours < 1 || hours > 12 ||
+                    minutes < 0 || minutes > 59
+                ) {
+                    return null;
+                }
+
+                if (period === 'AM') {
+                    if (hours === 12) hours = 0;
+                } else if (hours !== 12) {
+                    hours += 12;
+                }
+
+                return hours * 60 + minutes;
+            };
+
+            const newStart = parseTimeToMinutes(newTime);
+
+            if (newStart === null) {
+                const error = new Error(
+                    'Please select a valid appointment time.'
+                );
+                error.code = 'INVALID_APPOINTMENT_TIME';
+                throw error;
+            }
+
+            const newEnd = newStart + newDuration;
+
+            // Clinic hours: 9 AM–1 PM and 2 PM–6 PM.
+            const morningStart = 9 * 60;
+            const lunchStart = 13 * 60;
+            const afternoonStart = 14 * 60;
+            const closingTime = 18 * 60;
+
+            const withinClinicHours =
+                newStart >= morningStart &&
+                newEnd <= closingTime &&
+                (
+                    newEnd <= lunchStart ||
+                    newStart >= afternoonStart
+                );
+
+            if (!withinClinicHours) {
+                const error = new Error(
+                    'This appointment duration falls outside clinic hours.'
+                );
+                error.code = 'INVALID_APPOINTMENT_TIME';
+                throw error;
+            }
+
+            // Find this patient's most recent appointment, if any.
             const latestAppointmentResult = await client.query(
-    `
-    SELECT
-        id,
-        TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
-        appointment_time,
-        purpose
-    FROM appointments
-    WHERE patient_ref = $1
-    ORDER BY created_at DESC, id DESC
-    LIMIT 1
-    `,
-    [refId]
-);
+                `
+                SELECT
+                    id,
+                    TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
+                    appointment_time,
+                    purpose,
+                    room,
+                    duration_minutes
+                FROM appointments
+                WHERE patient_ref = $1
+                ORDER BY created_at DESC, id DESC
+                LIMIT 1
+                `,
+                [refId]
+            );
 
-if (latestAppointmentResult.rows.length > 0) {
-    // Reschedule: update the existing/latest appointment
-    previousAppointment = latestAppointmentResult.rows[0];
-    appointmentAction = 'Appointment Rescheduled';
+            if (latestAppointmentResult.rows.length > 0) {
+                previousAppointment = latestAppointmentResult.rows[0];
+            }
 
-    await client.query(
-        `
-        UPDATE appointments
-        SET
-            appointment_date = $1,
-            appointment_time = $2,
-            purpose = $3
-        WHERE id = $4
-        `,
-        [
-            appointment.date,
-            appointment.time || "",
-            appointment.purpose || "Consultation",
-            previousAppointment.id
-        ]
-    );
-} else {
-    // No appointment exists yet: create one
-    appointmentAction = 'New Appointment';
+            // Find other appointments on the requested date.
+            const conflictResult = await client.query(
+                `
+                SELECT
+                    id,
+                    appointment_time,
+                    room,
+                    duration_minutes
+                FROM appointments
+                WHERE appointment_date = $1::date
+                  AND ($2::bigint IS NULL OR id <> $2)
+                  AND LOWER(COALESCE(status, '')) NOT IN (
+                      'cancelled',
+                      'canceled',
+                      'rejected'
+                  )
+                `,
+                [
+                    newDate,
+                    previousAppointment
+                        ? previousAppointment.id
+                        : null
+                ]
+            );
 
-    await client.query(
-        `
-        INSERT INTO appointments (
-            patient_ref,
-            appointment_date,
-            appointment_time,
-            purpose
-        )
-        VALUES ($1, $2, $3, $4)
-        `,
-        [
-            refId,
-            appointment.date,
-            appointment.time || "",
-            appointment.purpose || "Consultation"
-        ]
-    );
+            const otherAppointments = conflictResult.rows;
+
+            const rooms = ['Room 1', 'Room 2', 'Room 3', 'Room 4'];
+            const requestedRoom = String(appointment.room || '').trim();
+
+            // Prefer this patient's current room when rescheduling.
+            if (!rooms.includes(requestedRoom)) {
+    const error = new Error('Please select a valid appointment room.');
+    error.code = 'INVALID_APPOINTMENT_ROOM';
+    throw error;
 }
+
+const hasConflict = otherAppointments.some(existing => {
+    const existingStart = parseTimeToMinutes(existing.appointment_time);
+
+    // Conservatively block the slot if a legacy time cannot be parsed.
+    if (existingStart === null) return true;
+
+    const existingDuration = Number(existing.duration_minutes) || 60;
+    const existingEnd = existingStart + existingDuration;
+
+    const overlaps = newStart < existingEnd && existingStart < newEnd;
+
+    // An overlapping appointment with no room blocks every room.
+    return overlaps && (
+        !existing.room || existing.room === requestedRoom
+    );
+});
+
+if (hasConflict) {
+    const error = new Error(
+        `${requestedRoom} is no longer available. Please select another room or time.`
+    );
+    error.code = 'ROOM_UNAVAILABLE';
+    throw error;
+}
+
+const assignedRoom = requestedRoom;
+
+            if (previousAppointment) {
+                const appointmentChanged =
+                    String(previousAppointment.appointment_date || '') !== newDate ||
+                    String(previousAppointment.appointment_time || '') !== newTime ||
+                    String(previousAppointment.purpose || 'Consultation') !== newPurpose ||
+                    Number(previousAppointment.duration_minutes || 60) !== newDuration ||
+                    String(previousAppointment.room || '') !== assignedRoom;
+
+                if (appointmentChanged) {
+                    await client.query(
+                        `
+                        UPDATE appointments
+                        SET
+                            appointment_date = $1,
+                            appointment_time = $2,
+                            purpose = $3,
+                            duration_minutes = $4,
+                            room = $5
+                        WHERE id = $6
+                        `,
+                        [
+                            newDate,
+                            newTime,
+                            newPurpose,
+                            newDuration,
+                            assignedRoom,
+                            previousAppointment.id
+                        ]
+                    );
+
+                    appointmentAction = 'Appointment Rescheduled';
+                }
+            } else {
+                await client.query(
+                    `
+                    INSERT INTO appointments (
+                        patient_ref,
+                        appointment_date,
+                        appointment_time,
+                        purpose,
+                        duration_minutes,
+                        room
+                    )
+                    VALUES ($1, $2, $3, $4, $5, $6)
+                    `,
+                    [
+                        refId,
+                        newDate,
+                        newTime,
+                        newPurpose,
+                        newDuration,
+                        assignedRoom
+                    ]
+                );
+
+                appointmentAction = 'New Appointment';
+            }
+
+            // Return booking details to the existing frontend save handler.
+            appointment.room = assignedRoom;
+            appointment.duration = newDuration;
         }
 
-       await client.query('COMMIT');
+
+        await client.query('COMMIT');
+
+        console.log(
+            `[Performance] Patient save and transaction: ${
+                Date.now() - routeStartedAt
+            } ms`
+        );
+
+
+
+
+const notificationStartedAt = Date.now();
 
 let emailResult = null;
 
-if (appointmentAction && email) {
+// Send exactly one email after a successful appointment save.
+if (appointmentAction && appointment) {
     emailResult = await sendAppointmentEmail({
-        to: email,
-        subject: `${appointmentAction} - Luna Skin Aesthetic`,
+        to: [process.env.SMTP_USER, email].filter(Boolean),
+        subject: `${appointmentAction} - ${name}`,
         patientName: name,
         patientPhone: contact,
         patientEmail: email,
-        date: appointment.date,
+        date: String(appointment.date || '').slice(0, 10),
         time: appointment.time || 'Not specified',
         purpose: appointment.purpose || 'Consultation',
-        message: previousAppointment
-            ? `Previous appointment: ${previousAppointment.appointment_date} at ${previousAppointment.appointment_time || 'Not specified'} (${previousAppointment.purpose || 'Consultation'})`
-            : '',
+        message:
+            appointmentAction === 'Appointment Rescheduled' &&
+            previousAppointment
+                ? `Previous appointment: ${
+                    previousAppointment.appointment_date
+                } at ${
+                    previousAppointment.appointment_time || 'Not specified'
+                } (${previousAppointment.purpose || 'Consultation'})`
+                : '',
         action: appointmentAction
     });
 
     console.log(
-        `📧 Doctor appointment email result for ${email}:`,
+        `Appointment email result for ${name}:`,
         emailResult
     );
-    await addNotification(
-    `Email notification sent to ${email}`,
-    "email"
-);
-
-await addNotification(
-    `Appointment ${appointmentAction.toLowerCase()} for ${name} on ${appointment.date} at ${appointment.time}`,
-    "appointment"
-);
 }
 
-// Return the same frontend-friendly structure used by GET /api/patients
+console.log(
+    `[Performance] Email notification: ${
+        Date.now() - notificationStartedAt
+    } ms`
+);
+
         const proceduresResult = await pool.query(
             `
             SELECT name, procedure_date, clinic
@@ -2083,21 +2509,23 @@ await addNotification(
             `,
             [refId]
         );
-        const appointmentResult = await pool.query(
-            `
-            SELECT
-            TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
-            appointment_time,
-            purpose
-            FROM appointments
-            WHERE patient_ref = $1
-            ORDER BY created_at DESC
-    
-            LIMIT 1
-            `,
-    
-            [refId]
-        );
+        
+const appointmentResult = await pool.query(
+    `
+    SELECT
+        TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
+        appointment_time,
+        purpose,
+        room,
+        duration_minutes
+    FROM appointments
+    WHERE patient_ref = $1
+    ORDER BY created_at DESC, id DESC
+    LIMIT 1
+    `,
+    [refId]
+);
+
 
         const patientResult = await pool.query(
             `
@@ -2170,20 +2598,28 @@ await addNotification(
                     dehydration: false
                 },
 
-            appointment: appointmentResult.rows[0]
-                ? {
-                    date: appointmentResult.rows[0].appointment_date || "",
-                    time: appointmentResult.rows[0].appointment_time || "",
-                    purpose: appointmentResult.rows[0].purpose || ""
-                }
-                : null,
+            
+appointment: appointmentResult.rows[0]
+    ? {
+        date: appointmentResult.rows[0].appointment_date || "",
+        time: appointmentResult.rows[0].appointment_time || "",
+        purpose: appointmentResult.rows[0].purpose || "",
+        room: appointmentResult.rows[0].room || "",
+        duration: appointmentResult.rows[0].duration_minutes || 60
+    }
+    : null,
 
-            assignedDoctor: patient.assigned_doctor || ""
+assignedDoctor: patient.assigned_doctor || ""
+
         };
+        console.log(
+    `[Performance] Total before response: ${Date.now() - routeStartedAt} ms`
+);
 
         return res.json(patientRecord);
 
-    } catch (error) {
+    } 
+     catch (error) {
         try {
             await client.query('ROLLBACK');
         } catch (rollbackError) {
@@ -2194,6 +2630,23 @@ await addNotification(
         }
 
         console.error('❌ Error updating patient:', error);
+        if (error.code === 'INVALID_APPOINTMENT_ROOM') {
+    return res.status(400).json({
+        error: error.message
+    });
+}
+
+        if (error.code === 'ROOM_UNAVAILABLE') {
+            return res.status(409).json({
+                error: error.message
+            });
+        }
+
+        if (error.code === 'INVALID_APPOINTMENT_TIME') {
+            return res.status(400).json({
+                error: error.message
+            });
+        }
 
         if (error.code === '23505') {
             return res.status(409).json({
@@ -2209,6 +2662,7 @@ await addNotification(
         client.release();
     }
 });
+
 
 // app.delete('/api/patients/:refId', (req, res) => {
 //     let patientsList = readDataFile(PATIENTS_FILE, INITIAL_PATIENTS);
@@ -2460,20 +2914,22 @@ app.put('/api/patients/:refId/appointment', async (req, res) => {
                 `📅 [APPOINTMENT RESCHEDULED] ${patient.name} → ${date} ${time}`
             );
 
-            await sendAppointmentEmail({
-                to: process.env.SMTP_USER,
-                subject: `Appointment Rescheduled - ${patient.name}`,
-                patientName: patient.name,
-                patientPhone: patient.contact,
-                patientEmail: patient.email,
-                date,
-                time,
-                purpose,
-                message:
-                    `Previous appointment: ${previousAppointment.appointment_date} at ${previousAppointment.appointment_time || 'Not specified'}`
-                    + ` (${previousAppointment.purpose || 'Consultation'})`,
-                action: appointmentAction
-            });
+    
+await sendAppointmentEmail({
+    to: [process.env.SMTP_USER, patient.email].filter(Boolean),
+    subject: `Appointment Rescheduled - ${patient.name}`,
+    patientName: patient.name,
+    patientPhone: patient.contact,
+    patientEmail: patient.email,
+    date,
+    time,
+    purpose,
+    message:
+        `Previous appointment: ${previousAppointment.appointment_date} at ${previousAppointment.appointment_time || 'Not specified'}`
+        + ` (${previousAppointment.purpose || 'Consultation'})`,
+    action: appointmentAction
+});
+
 
         } else {
             await pool.query(
@@ -2766,11 +3222,31 @@ app.get('/api/notifications', async (req, res) => {
     }
 });
 
-app.post('/api/notifications/clear', (req, res) => {
-    const notifs = readDataFile(NOTIFICATIONS_FILE, []);
-    notifs.forEach(n => n.read = true);
-    writeDataFile(NOTIFICATIONS_FILE, notifs);
-    res.json({ success: true, count: notifs.length });
+// app.post('/api/notifications/clear', (req, res) => {
+//     const notifs = readDataFile(NOTIFICATIONS_FILE, []);
+//     notifs.forEach(n => n.read = true);
+//     writeDataFile(NOTIFICATIONS_FILE, notifs);
+//     res.json({ success: true, count: notifs.length });
+// });
+app.post('/api/notifications/clear', async (req, res) => {
+    try {
+        await pool.query(
+            `
+            UPDATE notifications
+            SET read = TRUE
+            `
+        );
+
+        res.json({
+            success:true
+        });
+
+    } catch(error) {
+        console.error(error);
+        res.status(500).json({
+            error:"Unable to clear notifications"
+        });
+    }
 });
 
 app.post('/api/patients/:refId/upload-image', (req, res) => {
