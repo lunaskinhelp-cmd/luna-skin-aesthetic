@@ -8,6 +8,8 @@ let activePatient = null;
 let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
 let allAppointments = []; // Doctor calendar: all patient appointments
+let appointmentModalMode = 'new';
+let appointmentRescheduleId = null;
 let currentSession = null; // Auth session: { role, name, id, patientRef, patientRecord }
 
 // ─── DATE PARSING HELPERS ──────────────────────────────────────
@@ -2625,28 +2627,75 @@ document.querySelectorAll('.modal-close').forEach(btn => {
 });
 
 // ─── RESCHEDULE / BOOKING MODAL ───────────────────────────────
+
 document.getElementById('reschedule-btn')?.addEventListener('click', async () => {
+    const currentAppointment = activePatient?.appointment;
+
+    const matchingAppointment = allAppointments.find(a =>
+        String(a.patientRef) === String(activePatient?.refId) &&
+        String(a.date).slice(0, 10) ===
+            String(currentAppointment?.date).slice(0, 10) &&
+        String(a.time) === String(currentAppointment?.time)
+    );
+
+    const appointmentStatus = String(
+        matchingAppointment?.status || currentAppointment?.status || ''
+    ).toLowerCase();
+
+    const isCompleted = appointmentStatus === 'completed';
+
+    if (isCompleted) {
+        // A completed appointment cannot be rescheduled.
+        // Start a separate booking instead.
+        appointmentModalMode = 'new';
+        appointmentRescheduleId = null;
+
+        const dateInput = document.getElementById('modal-date-input');
+        const purposeInput = document.getElementById('modal-purpose-input');
+        const durationSelect = document.getElementById('modal-duration-select');
+        const timeSelect = document.getElementById('modal-time-select');
+
+        if (dateInput) dateInput.value = '';
+        if (purposeInput) purposeInput.value = '';
+        if (durationSelect) durationSelect.value = '60';
+        if (timeSelect) timeSelect.value = '';
+
+        openModal('reschedule-modal');
+        await updateAvailableRoomOptions();
+
+        showToast('Completed appointment preserved. Schedule a new appointment.', 'success');
+        return;
+    }
+
+    appointmentModalMode = 'reschedule';
+    appointmentRescheduleId = matchingAppointment?.id ?? null;
+
+    if (!appointmentRescheduleId) {
+        showToast(
+            'Could not identify the appointment to reschedule. Please refresh and try again.',
+            'error'
+        );
+        return;
+    }
+
     const dateInput = document.getElementById('modal-date-input');
     const purposeInput = document.getElementById('modal-purpose-input');
     const timeSelect = document.getElementById('modal-time-select');
     const durationSelect = document.getElementById('modal-duration-select');
 
-    if (activePatient?.appointment) {
-        dateInput.value = activePatient.appointment.date || '';
-        purposeInput.value = activePatient.appointment.purpose || '';
+    if (currentAppointment) {
+        if (dateInput) dateInput.value = currentAppointment.date || '';
+        if (purposeInput) purposeInput.value = currentAppointment.purpose || '';
 
         if (durationSelect) {
-            durationSelect.value = String(
-                activePatient.appointment.duration || 60
-            );
+            durationSelect.value = String(currentAppointment.duration || 60);
         }
 
-        // Restore the saved appointment time.
         if (timeSelect) {
             updateModalTimeSlots();
 
             for (const opt of timeSelect.options) {
-                if (opt.value === activePatient.appointment.time) {
+                if (opt.value === currentAppointment.time) {
                     opt.selected = true;
                     break;
                 }
@@ -2655,13 +2704,10 @@ document.getElementById('reschedule-btn')?.addEventListener('click', async () =>
     }
 
     openModal('reschedule-modal');
-
-    // Load rooms for the selected date, time, and duration.
     await updateAvailableRoomOptions();
 
-    // Restore the previous room only if it is still available.
     const roomSelect = document.getElementById('appointment-room-select');
-    const savedRoom = activePatient?.appointment?.room;
+    const savedRoom = currentAppointment?.room;
 
     if (roomSelect && savedRoom) {
         const roomExists = Array.from(roomSelect.options)
@@ -2672,7 +2718,10 @@ document.getElementById('reschedule-btn')?.addEventListener('click', async () =>
         }
     }
 });
+
 document.getElementById('schedule-followup-header-btn')?.addEventListener('click', async () => {
+        appointmentModalMode = 'new';
+    appointmentRescheduleId = null;
     openModal('reschedule-modal');
 
     await updateAvailableRoomOptions();
@@ -2773,6 +2822,15 @@ if (!activePatient.appointment) {
 
         saveCurrentInputsToMemory();
 
+
+
+        activePatient.appointment.action = appointmentModalMode;
+
+activePatient.appointment.id =
+    appointmentModalMode === 'reschedule'
+        ? appointmentRescheduleId
+        : null;
+
         
 
 const savedPatient = await savePatientToServer(activePatient);
@@ -2794,6 +2852,9 @@ document.getElementById('schedule-time-text').textContent =
     ` · ${savedAppointment?.duration || 60} mins`;
 
 saveCustomPatientToLocalStorage(activePatient);
+
+// Reload appointments from PostgreSQL after saving.
+await loadAllAppointments();
 
 
         // Move calendar to the newly scheduled appointment date

@@ -1130,6 +1130,7 @@ select.input-clinical {
     color: var(--color-secondary);
     opacity: 0.6;
     padding-bottom: 8px;
+    text-align: center;
 }
 
 .calendar-day {

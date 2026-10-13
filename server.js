@@ -1,8 +1,8 @@
 require('dotenv').config();
 
 
-// console.log('🔍 DATABASE_URL loaded:', !!process.env.DATABASE_URL);
-// console.log('🔍 DATABASE_URL prefix:', process.env.DATABASE_URL?.substring(0, 25));
+// console.log('ðŸ” DATABASE_URL loaded:', !!process.env.DATABASE_URL);
+// console.log('ðŸ” DATABASE_URL prefix:', process.env.DATABASE_URL?.substring(0, 25));
 
 
 
@@ -41,7 +41,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 
 
-    // ─── Appointment Email Helper ─────────────────────────────────
+    // â”€â”€â”€ Appointment Email Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function sendAppointmentEmail({
         to,
         subject,
@@ -55,7 +55,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
         action = 'Appointment Scheduled'
     }) {
         if (!to) {
-            console.log('📧 Email skipped: no recipient email address.');
+            console.log('ðŸ“§ Email skipped: no recipient email address.');
             return { sent: false, skipped: true };
         }
 
@@ -89,7 +89,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
             const info = await mailTransporter.sendMail(mailOptions);
 
             console.log(
-                `📧 Appointment email sent to ${to} | Message ID: ${info.messageId}`
+                `ðŸ“§ Appointment email sent to ${to} | Message ID: ${info.messageId}`
             );
 
             return {
@@ -98,7 +98,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
             };
 
         } catch (error) {
-            console.error(`❌ Failed to send appointment email to ${to}:`, error);
+            console.error(`âŒ Failed to send appointment email to ${to}:`, error);
 
             return {
                 sent: false,
@@ -140,7 +140,7 @@ const SETTINGS_FILE = 'settings.json';
 const USERS_FILE = 'users.json';
 const NOTIFICATIONS_FILE = 'notifications.json';
 
-// ─── Initial Seed Data ──────────────────────────────────────────────────────
+// â”€â”€â”€ Initial Seed Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const INITIAL_PATIENTS = [
     {
@@ -312,7 +312,7 @@ const INITIAL_USERS = [
     { id: "patient-john-61201", name: "John", email: "john@example.com", password: "password123", role: "patient", patientRef: "LSA-2026-61201" }
 ];
 
-// ─── Filesystem Setup & Data Helpers ─────────────────────────────────────────
+// â”€â”€â”€ Filesystem Setup & Data Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const memoryCache = {};
 
@@ -452,13 +452,13 @@ async function addNotification(message, type = 'info') {
 
         return id;
     } catch (error) {
-        console.error('❌ Failed to save notification:', error.message);
+        console.error('âŒ Failed to save notification:', error.message);
         throw error;
     }
 }
-// ─── AUTH ROUTES ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ AUTH ROUTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// POST /api/auth/login — Doctor or Patient login
+// POST /api/auth/login â€” Doctor or Patient login
 // app.post('/api/auth/login', (req, res) => {
 //     const { email, password } = req.body;
 
@@ -511,7 +511,7 @@ async function addNotification(message, type = 'info') {
 //     return res.status(401).json({ error: "Invalid credentials. Please check your email and password." });
 // });
 
-// POST /api/auth/login — Doctor or Patient login
+// POST /api/auth/login â€” Doctor or Patient login
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -771,7 +771,7 @@ if (user.role === 'patient') {
         });
 
     } catch (error) {
-        console.error('❌ Login error:', error);
+        console.error('âŒ Login error:', error);
 
         return res.status(500).json({
             error: "Unable to process login."
@@ -779,7 +779,7 @@ if (user.role === 'patient') {
     }
 });     
 
-// POST /api/auth/register — Patient self-registration
+// POST /api/auth/register â€” Patient self-registration
 // app.post('/api/auth/register', (req, res) => {
 //     const { name, email, password, contact, dob, gender } = req.body;
 
@@ -1055,10 +1055,10 @@ app.post('/api/auth/register', async (req, res) => {
         try {
             await client.query('ROLLBACK');
         } catch (rollbackError) {
-            console.error('❌ Rollback error:', rollbackError.message);
+            console.error('âŒ Rollback error:', rollbackError.message);
         }
 
-        console.error('❌ Registration error:', error);
+        console.error('âŒ Registration error:', error);
 
         // Handle PostgreSQL duplicate email/refId race conditions
         if (error.code === '23505') {
@@ -1078,13 +1078,13 @@ app.post('/api/auth/register', async (req, res) => {
 
 
 
-// ─── ALL APPOINTMENTS ROUTE (For Doctor Calendar) ────────────────────────────
+// â”€â”€â”€ ALL APPOINTMENTS ROUTE (For Doctor Calendar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// GET /api/appointments — Aggregate all patient appointments
-// ─── ALL APPOINTMENTS ROUTE (For Doctor Calendar) ────────────────────────────
+// GET /api/appointments â€” Aggregate all patient appointments
+// â”€â”€â”€ ALL APPOINTMENTS ROUTE (For Doctor Calendar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
- // GET /api/appointments — Read all appointments from PostgreSQL
+ // GET /api/appointments â€” Read all appointments from PostgreSQL
 
 app.get('/api/appointments', async (req, res) => {
     try {
@@ -1176,7 +1176,7 @@ app.patch('/api/appointments/:id/status', async (req, res) => {
 
 
 
-// ─── PATIENT ROUTES ──────────────────────────────────────────────────────────
+// â”€â”€â”€ PATIENT ROUTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // app.get('/api/patients', (req, res) => {
 //     const data = readDataFile(PATIENTS_FILE, INITIAL_PATIENTS);
@@ -1759,12 +1759,12 @@ app.post('/api/patients', async (req, res) => {
             await client.query('ROLLBACK');
         } catch (rollbackError) {
             console.error(
-                '❌ Rollback error:',
+                'âŒ Rollback error:',
                 rollbackError.message
             );
         }
 
-        console.error('❌ Error creating patient:', error);
+        console.error('âŒ Error creating patient:', error);
 
         if (error.code === '23505') {
             return res.status(409).json({
@@ -1986,6 +1986,7 @@ app.put('/api/patients/:refId', async (req, res) => {
         const appointment = updatedPatient.appointment && typeof updatedPatient.appointment === "object"
             ? updatedPatient.appointment
             : null;
+        const requestedAction = String(appointment?.action || 'legacy').toLowerCase();
 
         const concernsChecklist =
             updatedPatient.concernsChecklist &&
@@ -2245,7 +2246,7 @@ app.put('/api/patients/:refId', async (req, res) => {
 
             const newEnd = newStart + newDuration;
 
-            // Clinic hours: 9 AM–1 PM and 2 PM–6 PM.
+            // Clinic hours: 9 AMâ€“1 PM and 2 PMâ€“6 PM.
             const morningStart = 9 * 60;
             const lunchStart = 13 * 60;
             const afternoonStart = 14 * 60;
@@ -2268,26 +2269,83 @@ app.put('/api/patients/:refId', async (req, res) => {
             }
 
             // Find this patient's most recent appointment, if any.
-            const latestAppointmentResult = await client.query(
-                `
-                SELECT
-                    id,
-                    TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
-                    appointment_time,
-                    purpose,
-                    room,
-                    duration_minutes
-                FROM appointments
-                WHERE patient_ref = $1
-                ORDER BY created_at DESC, id DESC
-                LIMIT 1
-                `,
-                [refId]
-            );
 
-            if (latestAppointmentResult.rows.length > 0) {
-                previousAppointment = latestAppointmentResult.rows[0];
+            // Select the correct appointment based on the requested action.
+            if (requestedAction === 'reschedule') {
+                const requestedAppointmentId = Number(appointment.id);
+
+                if (!Number.isSafeInteger(requestedAppointmentId) ||
+                    requestedAppointmentId <= 0) {
+                    const error = new Error(
+                        'Missing appointment ID. Refresh and try again.'
+                    );
+                    error.code = 'APPOINTMENT_NOT_FOUND';
+                    throw error;
+                }
+
+                const selectedAppointmentResult = await client.query(
+                    `
+                    SELECT
+                        id,
+                        TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
+                        appointment_time,
+                        purpose,
+                        room,
+                        duration_minutes,
+                        status
+                    FROM appointments
+                    WHERE id = $1
+                      AND patient_ref = $2
+                    LIMIT 1
+                    `,
+                    [requestedAppointmentId, refId]
+                );
+
+                if (!selectedAppointmentResult.rows.length) {
+                    const error = new Error(
+                        'Selected appointment not found. Refresh and try again.'
+                    );
+                    error.code = 'APPOINTMENT_NOT_FOUND';
+                    throw error;
+                }
+
+                previousAppointment = selectedAppointmentResult.rows[0];
+
+                if (
+                    String(previousAppointment.status || '').toLowerCase() ===
+                    'completed'
+                ) {
+                    const error = new Error(
+                        'Completed appointments cannot be rescheduled. Please schedule a new appointment.'
+                    );
+                    error.code = 'COMPLETED_APPOINTMENT';
+                    throw error;
+                }
+            } else if (requestedAction !== 'new') {
+                // Preserve the legacy lookup for older callers.
+                const latestAppointmentResult = await client.query(
+                    `
+                    SELECT
+                        id,
+                        TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
+                        appointment_time,
+                        purpose,
+                        room,
+                        duration_minutes,
+                        status
+                    FROM appointments
+                    WHERE patient_ref = $1
+                    ORDER BY created_at DESC, id DESC
+                    LIMIT 1
+                    `,
+                    [refId]
+                );
+
+                if (latestAppointmentResult.rows.length > 0) {
+                    previousAppointment = latestAppointmentResult.rows[0];
+                }
             }
+
 
             // Find other appointments on the requested date.
             const conflictResult = await client.query(
@@ -2301,6 +2359,7 @@ app.put('/api/patients/:refId', async (req, res) => {
                 WHERE appointment_date = $1::date
                   AND ($2::bigint IS NULL OR id <> $2)
                   AND LOWER(COALESCE(status, '')) NOT IN (
+                      'completed',
                       'cancelled',
                       'canceled',
                       'rejected'
@@ -2352,68 +2411,152 @@ if (hasConflict) {
 }
 
 const assignedRoom = requestedRoom;
+let savedAppointmentRow = null;
 
-            if (previousAppointment) {
-                const appointmentChanged =
-                    String(previousAppointment.appointment_date || '') !== newDate ||
-                    String(previousAppointment.appointment_time || '') !== newTime ||
-                    String(previousAppointment.purpose || 'Consultation') !== newPurpose ||
-                    Number(previousAppointment.duration_minutes || 60) !== newDuration ||
-                    String(previousAppointment.room || '') !== assignedRoom;
+if (requestedAction === 'new') {
+    // A follow-up is always a separate appointment.
+    const insertResult = await client.query(
+        `
+        INSERT INTO appointments (
+            patient_ref,
+            appointment_date,
+            appointment_time,
+            purpose,
+            duration_minutes,
+            room
+        )
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id, status
+        `,
+        [
+            refId,
+            newDate,
+            newTime,
+            newPurpose,
+            newDuration,
+            assignedRoom
+        ]
+    );
 
-                if (appointmentChanged) {
-                    await client.query(
-                        `
-                        UPDATE appointments
-                        SET
-                            appointment_date = $1,
-                            appointment_time = $2,
-                            purpose = $3,
-                            duration_minutes = $4,
-                            room = $5
-                        WHERE id = $6
-                        `,
-                        [
-                            newDate,
-                            newTime,
-                            newPurpose,
-                            newDuration,
-                            assignedRoom,
-                            previousAppointment.id
-                        ]
-                    );
+    savedAppointmentRow = insertResult.rows[0];
+    appointmentAction = 'New Appointment';
+} else if (requestedAction === 'reschedule') {
+    if (!previousAppointment) {
+        const error = new Error(
+            'Appointment not found. Refresh and try again.'
+        );
+        error.code = 'APPOINTMENT_NOT_FOUND';
+        throw error;
+    }
 
-                    appointmentAction = 'Appointment Rescheduled';
-                }
-            } else {
-                await client.query(
-                    `
-                    INSERT INTO appointments (
-                        patient_ref,
-                        appointment_date,
-                        appointment_time,
-                        purpose,
-                        duration_minutes,
-                        room
-                    )
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                    `,
-                    [
-                        refId,
-                        newDate,
-                        newTime,
-                        newPurpose,
-                        newDuration,
-                        assignedRoom
-                    ]
-                );
+    const updateResult = await client.query(
+        `
+        UPDATE appointments
+        SET
+            appointment_date = $1,
+            appointment_time = $2,
+            purpose = $3,
+            duration_minutes = $4,
+            room = $5
+        WHERE id = $6
+          AND patient_ref = $7
+          AND LOWER(COALESCE(status, '')) <> 'completed'
+        RETURNING id, status
+        `,
+        [
+            newDate,
+            newTime,
+            newPurpose,
+            newDuration,
+            assignedRoom,
+            previousAppointment.id,
+            refId
+        ]
+    );
 
-                appointmentAction = 'New Appointment';
-            }
+    if (!updateResult.rows.length) {
+        const error = new Error(
+            'This appointment cannot be rescheduled. Refresh and try again.'
+        );
+        error.code = 'APPOINTMENT_NOT_FOUND';
+        throw error;
+    }
 
-            // Return booking details to the existing frontend save handler.
-            appointment.room = assignedRoom;
-            appointment.duration = newDuration;
+    savedAppointmentRow = updateResult.rows[0];
+    appointmentAction = 'Appointment Rescheduled';
+} else {
+    // Preserve existing behavior for older callers that don't send an action.
+    if (previousAppointment) {
+        const appointmentChanged =
+            String(previousAppointment.appointment_date || '') !== newDate ||
+            String(previousAppointment.appointment_time || '') !== newTime ||
+            String(previousAppointment.purpose || 'Consultation') !== newPurpose ||
+            Number(previousAppointment.duration_minutes || 60) !== newDuration ||
+            String(previousAppointment.room || '') !== assignedRoom;
+
+        if (appointmentChanged) {
+            const updateResult = await client.query(
+                `
+                UPDATE appointments
+                SET
+                    appointment_date = $1,
+                    appointment_time = $2,
+                    purpose = $3,
+                    duration_minutes = $4,
+                    room = $5
+                WHERE id = $6
+                  AND patient_ref = $7
+                RETURNING id, status
+                `,
+                [
+                    newDate,
+                    newTime,
+                    newPurpose,
+                    newDuration,
+                    assignedRoom,
+                    previousAppointment.id,
+                    refId
+                ]
+            );
+
+            savedAppointmentRow = updateResult.rows[0];
+            appointmentAction = 'Appointment Rescheduled';
+        } else {
+            savedAppointmentRow = previousAppointment;
+        }
+    } else {
+        const insertResult = await client.query(
+            `
+            INSERT INTO appointments (
+                patient_ref,
+                appointment_date,
+                appointment_time,
+                purpose,
+                duration_minutes,
+                room
+            )
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, status
+            `,
+            [
+                refId,
+                newDate,
+                newTime,
+                newPurpose,
+                newDuration,
+                assignedRoom
+            ]
+        );
+
+        savedAppointmentRow = insertResult.rows[0];
+        appointmentAction = 'New Appointment';
+    }
+}
+
+appointment.id = savedAppointmentRow?.id ?? null;
+appointment.status = savedAppointmentRow?.status ?? 'Active';
+appointment.room = assignedRoom;
+appointment.duration = newDuration;
         }
 
 
@@ -2513,17 +2656,25 @@ console.log(
 const appointmentResult = await pool.query(
     `
     SELECT
+        id,
         TO_CHAR(appointment_date, 'YYYY-MM-DD') AS appointment_date,
         appointment_time,
         purpose,
         room,
-        duration_minutes
+        duration_minutes,
+        status
     FROM appointments
     WHERE patient_ref = $1
+      AND ($2::bigint IS NULL OR id = $2)
     ORDER BY created_at DESC, id DESC
     LIMIT 1
     `,
-    [refId]
+    [
+        refId,
+        appointment?.id && /^\d+$/.test(String(appointment.id))
+            ? Number(appointment.id)
+            : null
+    ]
 );
 
 
@@ -2601,11 +2752,13 @@ const appointmentResult = await pool.query(
             
 appointment: appointmentResult.rows[0]
     ? {
+        id: appointmentResult.rows[0].id,
         date: appointmentResult.rows[0].appointment_date || "",
         time: appointmentResult.rows[0].appointment_time || "",
         purpose: appointmentResult.rows[0].purpose || "",
         room: appointmentResult.rows[0].room || "",
-        duration: appointmentResult.rows[0].duration_minutes || 60
+        duration: appointmentResult.rows[0].duration_minutes || 60,
+        status: appointmentResult.rows[0].status || "Active"
     }
     : null,
 
@@ -2624,12 +2777,12 @@ assignedDoctor: patient.assigned_doctor || ""
             await client.query('ROLLBACK');
         } catch (rollbackError) {
             console.error(
-                '❌ Rollback error:',
+                'âŒ Rollback error:',
                 rollbackError.message
             );
         }
 
-        console.error('❌ Error updating patient:', error);
+        console.error('âŒ Error updating patient:', error);
         if (error.code === 'INVALID_APPOINTMENT_ROOM') {
     return res.status(400).json({
         error: error.message
@@ -2795,7 +2948,7 @@ await client.query(
         await client.query('COMMIT');
 
         console.log(
-            `🗑️ Patient permanently deleted from PostgreSQL: ${patient.name} (${patientRef})`
+            `ðŸ—‘ï¸ Patient permanently deleted from PostgreSQL: ${patient.name} (${patientRef})`
         );
 
         return res.json({
@@ -2806,7 +2959,7 @@ await client.query(
     } catch (error) {
         await client.query('ROLLBACK');
 
-        console.error('❌ Failed to delete patient:', error);
+        console.error('âŒ Failed to delete patient:', error);
 
         return res.status(500).json({
             error: "Unable to delete patient record."
@@ -2911,7 +3064,7 @@ app.put('/api/patients/:refId/appointment', async (req, res) => {
             );
 
             console.log(
-                `📅 [APPOINTMENT RESCHEDULED] ${patient.name} → ${date} ${time}`
+                `ðŸ“… [APPOINTMENT RESCHEDULED] ${patient.name} â†’ ${date} ${time}`
             );
 
     
@@ -2946,7 +3099,7 @@ await sendAppointmentEmail({
             );
 
             console.log(
-                `📅 [APPOINTMENT CREATED] ${patient.name} → ${date} ${time}`
+                `ðŸ“… [APPOINTMENT CREATED] ${patient.name} â†’ ${date} ${time}`
             );
 
             await sendAppointmentEmail({
@@ -2963,7 +3116,7 @@ await sendAppointmentEmail({
         }
 
         console.log(`\n================================================================================`);
-        console.log(`📅 [APPOINTMENT BOOKED]`);
+        console.log(`ðŸ“… [APPOINTMENT BOOKED]`);
         console.log(`   Patient: ${patient.name}`);
         console.log(`   Ref ID: ${refId}`);
         console.log(`   Date: ${date}`);
@@ -3027,7 +3180,7 @@ await sendAppointmentEmail({
         });
 
     } catch (error) {
-        console.error('❌ Appointment booking error:', error);
+        console.error('âŒ Appointment booking error:', error);
 
         return res.status(500).json({
             error: "Unable to book appointment."
@@ -3035,7 +3188,7 @@ await sendAppointmentEmail({
     }
 });
 
-// POST /api/appointments/request — Public landing page booking request
+// POST /api/appointments/request â€” Public landing page booking request
 // app.post('/api/appointments/request', (req, res) => {
 //     const { name, phone, email, service, date, message } = req.body;
 
@@ -3047,7 +3200,7 @@ await sendAppointmentEmail({
 //     const purpose = service || "Initial Consultation";
 
 //     console.log(`\n================================================================================`);
-//     console.log(`📅 [PUBLIC APPOINTMENT REQUEST RECEIVED]`);
+//     console.log(`ðŸ“… [PUBLIC APPOINTMENT REQUEST RECEIVED]`);
 //     console.log(`   Patient Name: ${name}`);
 //     console.log(`   Phone: ${phone}`);
 //     console.log(`   Email: ${email || 'N/A'}`);
@@ -3067,8 +3220,8 @@ await sendAppointmentEmail({
 //         booking: { name, phone, email, service: purpose, date: bookingDate, message }
 //     });
 // });
-// POST /api/appointments/request — Public landing page booking request
-// POST /api/appointments/request — Public landing page booking request
+// POST /api/appointments/request â€” Public landing page booking request
+// POST /api/appointments/request â€” Public landing page booking request
 
 app.post('/api/appointments/request', async (req, res) => {
     const {
@@ -3136,7 +3289,7 @@ app.post('/api/appointments/request', async (req, res) => {
         const appointment = appointmentResult.rows[0];
 
         console.log(
-            `📅 [PUBLIC APPOINTMENT SAVED] ${name} → ${bookingDate}`
+            `ðŸ“… [PUBLIC APPOINTMENT SAVED] ${name} â†’ ${bookingDate}`
         );
 
         // Send appointment request email to the clinic/doctor.
@@ -3179,7 +3332,7 @@ app.post('/api/appointments/request', async (req, res) => {
 
     } catch (error) {
         console.error(
-            '❌ Failed to process public appointment request:',
+            'âŒ Failed to process public appointment request:',
             error
         );
 
@@ -3302,7 +3455,7 @@ app.post('/api/patients/:refId/upload-image', (req, res) => {
     }
 });
 
-// ─── SETTINGS ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ SETTINGS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 app.get('/api/settings', (req, res) => {
     const settings = readDataFile(SETTINGS_FILE, INITIAL_SETTINGS);
@@ -3322,7 +3475,7 @@ app.post('/api/reset', (req, res) => {
     res.json({ message: "Database reset to defaults successfully." });
 });
 
-// ─── STATIC ASSETS ───────────────────────────────────────────────────────────
+// â”€â”€â”€ STATIC ASSETS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Direct static string literal paths so @vercel/nft dependency tracer includes all static assets in serverless zip
 function readTextAsset(filename) {
@@ -3407,7 +3560,7 @@ app.use((err, req, res, next) => {
 
 if (require.main === module) {
     app.listen(PORT, () => {
-        console.log(`\n🌙 Luna Skin Aesthetic — Cosmetic Portal`);
+        console.log(`\nðŸŒ™ Luna Skin Aesthetic â€” Cosmetic Portal`);
         console.log(`   Server running at: http://localhost:${PORT}\n`);
     });
 }
